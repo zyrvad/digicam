@@ -14,8 +14,8 @@
  "Screen GND to GND": 90,
  "Left button to GPIO 3": 55,
  "OK button to GPIO 46": 45,
- "Right button to GPIO 48 (crosses at the USB end)": 95,
+ "Right button to GPIO 48 (crosses at the USB end)": 90,
  "Shutter to GPIO 14": 135,
  "Buttons' and shutter's GND chain to GND": 80,
- "Buttons' GND chain on to the shutter's other leg": 90
+ "Buttons' GND chain on to the shutter's other leg": 85
 }

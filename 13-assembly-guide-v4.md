@@ -15,6 +15,11 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 
 ![Before and after](cad/renders/v4/before_after_m6.png)
 
+**26 Oct, the buttons:**
+- **Bigger wire holes in the carrier:** 1.8 × 2.25 mm (they were 1.0 × 1.6), so a 26 AWG wire goes through beside each foot. The rest of Allen's pocket is unchanged.
+- **The buttons are 14 mm apart** (they were 11), so the holes of one switch are 2 mm from the next switch's holes and the legs can't touch. The caps, their sleeves and the carrier's posts on the back plate follow; the buttons stay centred over the picture.
+- **Plate 6** is a button test: the back plate and the carrier (29 min). The same two parts are on plate 4 with the frame and deck.
+
 **26 Oct, the battery side:**
 - **The power cradle is now a block** that fills the space between the battery and the front plate. It wraps snugly round the two corner posts beside the battery, so it can only sit one way, with the module's USB-C on its opening. The old cradle could slide over the divider, which is why its pocket drifted.
 - **The module's pocket is snug:** 0.15 mm clearance, with a step at its pads as an end stop.
@@ -180,8 +185,9 @@ Then run `python3 cad/export_v4.py` (parts and fit check) and `python3 cad/make_
 | 1 **Test first** | frame, back plate, front plate, wiring deck, power cradle, button carrier | PLA Wood brown (the deck, cradle and carrier are hidden, so brown is fine) | 1 h 50 min, 64 g |
 | 2 Coverings | front and back coverings, with the portrait inlay; the dark window card | PLA Wood + black | 1 h 5 min, 16 g |
 | 3 Silver | top cover, bottom plate, lens barrel, 3 button caps, shutter cap, knob, speed dial, shoe, advance lever | PLA Basic white (or silver) | 1 h 10 min, 36 g |
-| 4 **Reprint: frame, back plate, deck** | frame (deck bosses 1 mm higher), back plate, wiring deck | PLA Wood brown | 1 h 22 min, 43 g |
+| 4 **Reprint: frame, back plate, deck, carrier** | frame (deck bosses 1 mm higher), back plate, wiring deck, button carrier | PLA Wood brown | 1 h 27 min, 44 g |
 | 5 **Battery test** | power cradle (the new block), front plate | PLA Wood brown | 30 min, 22 g |
+| 6 **Button test** | back plate, button carrier (14 mm apart, bigger wire holes) | PLA Wood brown | 29 min, 15 g |
 
 **Test first:**
 1. Print plate 1 and build the inside: steps 1 to 11, with the desk test at the end of step 11.
@@ -232,10 +238,10 @@ The 3D guide's **Wire by wire** step (step 4) goes through all 21 wires one at a
 | Screen BLK | **GPIO 20** | 30 AWG | 100 mm |
 | Left button | **GPIO 3** | 30 AWG | 55 mm |
 | OK button | **GPIO 46** | 30 AWG | 45 mm |
-| Right button | **GPIO 48** | 30 AWG | 95 mm |
+| Right button | **GPIO 48** | 30 AWG | 90 mm |
 | Shutter (left end) | **GPIO 14** | 30 AWG | 135 mm |
-| Other foot of the three buttons, chained | **GND** | 30 AWG black | 75 mm (+ two 15 mm jumpers) |
-| … and on from the chain | the shutter's other leg | 30 AWG black | 90 mm |
+| Other foot of the three buttons, chained | **GND** | 30 AWG black | 80 mm (+ two 18 mm jumpers) |
+| … and on from the chain | the shutter's other leg | 30 AWG black | 85 mm |
 | Battery red / black | module **B+ / B−** | battery's own leads | about 45 mm |
 | Module OUT+ | slide switch **middle** leg (right end) | 26 AWG red | 135 mm |
 | Slide switch **end** leg | **5V** (3V3 row, pad 20) | 26 AWG red | 50 mm |

@@ -207,7 +207,8 @@ scr_pads = [for (i = [0 : 7]) [scr_xy[0] + scr_pin_in, scr_xy[1] + scr[1] / 2 + 
 // back buttons, centred over the screen's picture
 cap_ds = [5.5, 6.5, 5.5];
 btn_y = scr_xy[1] + scr[1] + 0.2 + (cap_ds[1] + 2.4) / 2;   // the caps' flanges just clear the screen's top edge
-btn_xs = [for (i = [-1 : 1]) win_c[0] - win_dx + 11 * i];   // where they were printed (the window's shift doesn't move them)
+btn_pitch = 14;             // 14 mm apart (it was 11): room for 26 AWG wire holes, well clear of the next switch's legs
+btn_xs = [for (i = [-1 : 1]) win_c[0] - win_dx + btn_pitch * i];   // centred on the picture as printed (the window's shift doesn't move them)
 sleeve = [3.0, 1.0];
 flange = 1.0;
 z_flange0 = z_bi + sleeve[0];
@@ -558,7 +559,8 @@ snap_t = 0.9;
 z_snap = z_btn_base - bbtn_body - 0.05;   // the catch face, just past the switch's top
 leg_y0 = 1.5;               // the legs' notch: wider than a leg (1.9-2.6) so either reading of the drawing fits
 wire_x0 = bbtn_feet / 2 + 0.2;            // the wire holes start just past the foot tips
-wire_w = 1.0;
+wire_w = 1.8;               // and are 1.8 x 2.25 mm: a 26 AWG wire (1.6 mm over its insulation) goes through
+wire_y = [1.15, 3.4];       // their extent across, from the switch's centre line (round each leg's centre, 2.25)
 module carrier() {
     difference() {
         union() {
@@ -590,7 +592,7 @@ module carrier() {
                 zbox(sx < 0 ? x - bbtn_feet / 2 - 0.35 : x + bbtn_w / 2 - 0.05, sy < 0 ? btn_y - pi_ : btn_y + leg_y0,
                      bbtn_feet / 2 + 0.35 - bbtn_w / 2 + 0.05, pi_ - leg_y0, z_btn_base - 0.01, z_btn_base + bbtn_leg_drop + 0.15);
                 // ...and the wire comes through a hole just past its tip, to fold back onto the foot
-                zbox(sx < 0 ? x - wire_x0 - wire_w : x + wire_x0, sy < 0 ? btn_y - pi_ : btn_y + leg_y0, wire_w, pi_ - leg_y0,
+                zbox(sx < 0 ? x - wire_x0 - wire_w : x + wire_x0, sy < 0 ? btn_y - wire_y[1] : btn_y + wire_y[0], wire_w, wire_y[1] - wire_y[0],
                      z_btn_base - 1, z_btn_base + carrier_t + 1);
             }
         }

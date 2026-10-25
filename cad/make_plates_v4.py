@@ -17,6 +17,8 @@ Run export_v4.py first (it writes the parts). Plates, for the Bambu Lab P2S, 0.4
                USB-C holes with them), the back plate (screen pins 27.8 mm apart, glass on the
                pocket's floor, window 1 mm toward the pins) and the deck (clear of the screen's back,
                open wire lanes for 26 AWG, wire tray). The four-leg button carrier is unchanged.
+    6  brown   BUTTON TEST: the back plate and the button carrier, 14 mm between the buttons and
+               bigger wire holes (26 AWG). The same two parts are on plate 4.
     5  brown   BATTERY TEST: the power cradle (it lies on the battery and holds the charge module and
                the two resistors) and the front plate that clamps it, to try the battery side in the
                first frame (the battery side of the frame hasn't changed).
@@ -54,8 +56,9 @@ PLATES = [
     ("Brown coverings", [("leatherette.3mf", 3, GRAIN), ("back_leatherette.3mf", 3, GRAIN), ("window_card.stl", 1, GRAIN)]),
     ("Light (silver or white)", [("top_plate.stl", 2, {}), ("bottom_plate.stl", 2, {}), ("lens_barrel.stl", 2, {}),
                                  ("caps_light.stl", 2, {}), ("top_bits.stl", 2, {}), ("knob_cap.stl", 2, {})]),
-    ("Reprint: frame, back plate, deck (26 Oct)", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("deck.stl", 3, {})]),
+    ("Reprint: frame, back plate, deck, carrier (26 Oct)", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("deck.stl", 3, {}), ("carrier.stl", 3, {})]),
     ("Battery test: power cradle, front plate", [("cradle.stl", 3, {}), ("front_plate.stl", 3, {})]),
+    ("Button test: back plate, carrier", [("back_plate.stl", 3, {}), ("carrier.stl", 3, {})]),
 ]
 EXTRA_VOLUMES = {"back_leatherette.3mf": [("portrait_inlay.3mf", 1, "portrait inlay")]}
 

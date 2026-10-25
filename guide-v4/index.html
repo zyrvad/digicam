@@ -275,7 +275,7 @@ const STEPS = [
       <p class="warn">Every board wire goes <b>up through its pad from underneath</b> and is soldered on top.</p>
       ${pins([["Screen VCC", "3V3", "60"], ["Screen GND", "GND", "90"], ["SCL", "GPIO 21", "85"], ["SDA", "GPIO 47", "85"], ["RES", "EN", "55"],
               ["DC", "GPIO 45", "85"], ["CS", "GPIO 19", "100"], ["BLK", "GPIO 20", "100"], ["Left button", "GPIO 3", "55"], ["OK button", "GPIO 46", "45"],
-              ["Right button", "GPIO 48", "95"], ["Shutter", "GPIO 14", "135"], ["Switches' other feet", "GND", "75"], ["… and on", "shutter's other leg", "90"], ["Module OUT+", "switch middle", "135"],
+              ["Right button", "GPIO 48", "90"], ["Shutter", "GPIO 14", "135"], ["Switches' other feet", "GND", "80"], ["… and on", "shutter's other leg", "85"], ["Module OUT+", "switch middle", "135"],
               ["Switch end leg", "5V", "50"], ["Module OUT−", "GND", "150"], ["Resistors' middle", "GPIO 1", "95"]])}
       <p class="note">Right column: cut length in mm. The next step goes through them one wire at a time. Flash the v4 firmware first (its pins match this table), then test: the screen lights, every button and the shutter work, and it runs on the battery through the switch.</p>` },
   { title: "Wire by wire", view: "front3q", wires: true, show: [...ELEC, ...WIRES, "screen_pads"], hideCase: true,
@@ -402,7 +402,7 @@ const WIRE_INFO = [
     how: "Down beside the carrier, along the top lane, up through the pad." },
   { k: "w_btn_right", from: "Right button (signal foot)", to: "GPIO 48 (GND row, pad 15)", type: "30 AWG", len: "Right button to GPIO 48 (crosses at the USB end)",
     how: "Down into the top lane, along to the USB end, across to the bottom lane by the notch, back along it to the pad." },
-  { k: "w_bgnd_chain", from: "Left button's other foot", to: "OK and right buttons' other feet", type: "30 AWG black", lenText: "2 jumpers, about 15 mm each",
+  { k: "w_bgnd_chain", from: "Left button's other foot", to: "OK and right buttons' other feet", type: "30 AWG black", lenText: "2 jumpers, about 18 mm each",
     how: "Short jumpers across the carrier, joining the three switches' GND feet (use diagonal feet on each switch)." },
   { k: "w_bgnd_shutter", from: "Left button's other foot", to: "Shutter switch's other leg", type: "30 AWG black", len: "Buttons' GND chain on to the shutter's other leg",
     how: "Up over the carrier, along the top lane to the left end, up through the shutter's passage to its switch." },
