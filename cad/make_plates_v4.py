@@ -19,6 +19,10 @@ Run export_v4.py first (it writes the parts). Plates, for the Bambu Lab P2S, 0.4
                open wire lanes for 26 AWG, wire tray). The four-leg button carrier is unchanged.
     6  brown   BUTTON TEST: the back plate and the button carrier, 14 mm between the buttons and
                bigger wire holes (26 AWG). The same two parts are on plate 4.
+    7  light   OVERNIGHT (low risk, nothing still being tested touches them): the bottom plate, the
+               lens barrel, the button caps and shutter cap, the speed dial, shoe and advance lever
+    8  brown   OVERNIGHT: the front covering (0.1 mm layers; the first print of the new grain). The back
+               covering waits for the portrait's edits.
     5  brown   BATTERY TEST: the power cradle (it lies on the battery and holds the charge module and
                the two resistors) and the front plate that clamps it, to try the battery side in the
                first frame (the battery side of the frame hasn't changed).
@@ -59,6 +63,9 @@ PLATES = [
     ("Reprint: frame, back plate, deck, carrier (26 Oct)", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("deck.stl", 3, {}), ("carrier.stl", 3, {})]),
     ("Battery test: power cradle, front plate", [("cradle.stl", 3, {}), ("front_plate.stl", 3, {})]),
     ("Button test: back plate, carrier", [("back_plate.stl", 3, {}), ("carrier.stl", 3, {})]),
+    ("Overnight, silver: bottom plate, lens, caps, dial, shoe, lever", [("bottom_plate.stl", 2, {}), ("lens_barrel.stl", 2, {}),
+                                                                       ("caps_light.stl", 2, {}), ("top_bits.stl", 2, {})]),
+    ("Overnight, brown: front covering", [("leatherette.3mf", 3, GRAIN)]),
 ]
 EXTRA_VOLUMES = {"back_leatherette.3mf": [("portrait_inlay.3mf", 1, "portrait inlay")]}
 

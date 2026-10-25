@@ -15,6 +15,18 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 
 ![Before and after](cad/renders/v4/before_after_m6.png)
 
+**26 Oct, overnight prints:** the parts nothing still under test depends on.
+- **Plate 7 (silver):**
+  - the bottom plate, which screws to the frame's unchanged bottom bosses;
+  - the lens barrel;
+  - the three button caps and the shutter cap;
+  - the speed dial, shoe and advance lever.
+- **Plate 8 (brown):** the front covering, which is also the first print of the new grain.
+- **Still to come:**
+  - the back covering and its inlay, after the portrait's edits;
+  - the top cover and the knob, after its shutter and switch are tried;
+  - the dark window card, with the back covering's black.
+
 **26 Oct, the buttons:**
 - **Bigger wire holes in the carrier:** 1.8 × 2.25 mm (they were 1.0 × 1.6), so a 26 AWG wire goes through beside each foot. The rest of Allen's pocket is unchanged.
 - **The buttons are 14 mm apart** (they were 11), so the holes of one switch are 2 mm from the next switch's holes and the legs can't touch. The caps, their sleeves and the carrier's posts on the back plate follow; the buttons stay centred over the picture.
@@ -176,7 +188,7 @@ Then run `python3 cad/export_v4.py` (parts and fit check) and `python3 cad/make_
 
 ## 1. What you need
 
-### Printed (Bambu project, four plates; print plate 1 first and test)
+### Printed (Bambu project; print plate 1 first and test)
 
 ![Plates](cad/renders/v4/plates.png)
 
@@ -188,6 +200,8 @@ Then run `python3 cad/export_v4.py` (parts and fit check) and `python3 cad/make_
 | 4 **Reprint: frame, back plate, deck, carrier** | frame (deck bosses 1 mm higher), back plate, wiring deck, button carrier | PLA Wood brown | 1 h 27 min, 44 g |
 | 5 **Battery test** | power cradle (the new block), front plate | PLA Wood brown | 30 min, 22 g |
 | 6 **Button test** | back plate, button carrier (14 mm apart, bigger wire holes) | PLA Wood brown | 29 min, 15 g |
+| 7 **Overnight, silver** | bottom plate, lens barrel, 3 button caps and the shutter cap, speed dial, shoe, advance lever | PLA Basic white (or silver) | 41 min, 20 g |
+| 8 **Overnight, brown** | front covering (0.1 mm layers: the first print of the new grain) | PLA Wood brown | 24 min, 5 g |
 
 **Test first:**
 1. Print plate 1 and build the inside: steps 1 to 11, with the desk test at the end of step 11.
