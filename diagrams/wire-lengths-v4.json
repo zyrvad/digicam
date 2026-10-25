@@ -1,0 +1,21 @@
+{
+ "Battery + / − to module B+ / B− (the battery's own leads)": 45,
+ "Module OUT+ to the switch's middle leg (26 AWG red)": 135,
+ "Switch end leg to 5V (26 AWG red)": 50,
+ "Module OUT− to GND (26 AWG black)": 150,
+ "Battery level: resistors' middle to GPIO 1 (30 AWG)": 95,
+ "Screen BLK to GPIO 20": 100,
+ "Screen CS to GPIO 19": 100,
+ "Screen DC to GPIO 45": 85,
+ "Screen RES to EN": 55,
+ "Screen SDA to GPIO 47": 85,
+ "Screen SCL to GPIO 21": 85,
+ "Screen VCC to 3V3": 60,
+ "Screen GND to GND": 90,
+ "Left button to GPIO 3": 55,
+ "OK button to GPIO 46": 45,
+ "Right button to GPIO 48 (crosses at the USB end)": 95,
+ "Shutter to GPIO 14": 135,
+ "Buttons' and shutter's GND chain to GND": 80,
+ "Buttons' GND chain on to the shutter's other leg": 90
+}

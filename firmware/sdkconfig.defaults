@@ -64,3 +64,9 @@ CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY=y
 # during the phone's downloads. Its task only handles packets, never while flash is written.
 CONFIG_MDNS_MEMORY_ALLOC_SPIRAM=y
 CONFIG_MDNS_TASK_CREATE_FROM_SPIRAM=y
+
+# v4 pin plan (24 Oct): GPIO 19/20 drive the screen's CS and backlight, so no secondary console
+# on the native USB (the console stays on UART0, the TTL socket)
+CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
+# CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG is not set
+# CONFIG_USJ_ENABLE_USB_SERIAL_JTAG is not set

@@ -1,5 +1,7 @@
 # Camera 1 case design
 
+> **Current: v4 (24 Oct)**, `cad/camera1_v4.scad`, built around the parts as measured. Since 25 Oct its outside follows the Leica M6 in brown and in its proportions (128 × 73 × 22 mm): a brown body, a silver cover down to a third of the height, a silver bottom plate. Build it with `13-assembly-guide-v4.md`. The v3 notes below are kept for history.
+
 ## v3 bodies (23 Oct 2026): print one of these
 
 **Built for the parts as they arrived on 23 Oct.**

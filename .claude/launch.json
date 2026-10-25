@@ -50,6 +50,16 @@
       ],
       "port": 8769,
       "url": "http://127.0.0.1:8769"
+    },
+    {
+      "name": "digicam-guide-v4",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd guide-v4 && python3 -m http.server 8770 --bind 127.0.0.1"
+      ],
+      "port": 8770,
+      "url": "http://127.0.0.1:8770"
     }
   ]
 }

@@ -1,5 +1,7 @@
 # Packing list: building camera 1 (retro body) from scratch
 
+> **For v4 (24 Oct):** print `cad/export/v4/camera1_v4_plates.3mf` instead, and use the screws and inserts table in `13-assembly-guide-v4.md` (19 inserts, 8 countersunk M2 × 5, 2 × M2 × 8, 2 × M2 × 8 countersunk for the bottom plate, 2 × M2 × 4, 3 × M2 × 5, 2 × M2 × 6, 2 × M2 × 14 countersunk). Since 25 Oct the body prints in brown, on three plates: print plate 1 ("Test first": the body and inside parts) and test the inside before the other two. Pack a phone wrist strap for the strap holes, and a black marker for the eyepiece and frame counter. Add one 0.5 mm foam pad for the screen. Everything else below still applies.
+
 24 Oct 2026. Everything needed to build the retro camera from loose parts, following `11-assembly-guide-v3.md`. Pack it all before you move. Quantities are what the build uses; take spares where it says so.
 
 ## Before you leave (can't be done at the new place)

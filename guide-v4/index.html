@@ -1,0 +1,723 @@
+<meta charset="utf-8">
+<title>Camera 1 v4 Assembly</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a one-screen workbench. The model fills the stage; the build manual sits beside it
+   (below on phones), one step at a time, like the printed sheet in a camera kit. */
+:root {
+  --bg: #e7e7e9;            /* cool bench grey, a shade toward the camera's graphite */
+  --panel: #f8f8f9;
+  --ink: #1d1c1f;
+  --muted: #615f66;
+  --line: #d4d3d8;
+  --accent: #8b4a28;        /* the leather */
+  --accent-ink: #ffffff;
+  --chrome: #b9b7b0;        /* the top plate */
+  --chip: #e2e1e5;
+  --label-bg: rgba(29, 28, 31, .88);
+  --label-ink: #ffffff;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131315; --panel: #1b1b1e; --ink: #ebeaee; --muted: #a29fa8; --line: #2e2d33;
+    --accent: #cf8a5c; --accent-ink: #1b120c; --chrome: #8e8c86; --chip: #26252a;
+    --label-bg: rgba(246, 245, 248, .92); --label-ink: #1d1c1f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131315; --panel: #1b1b1e; --ink: #ebeaee; --muted: #a29fa8; --line: #2e2d33;
+  --accent: #cf8a5c; --accent-ink: #1b120c; --chrome: #8e8c86; --chip: #26252a;
+  --label-bg: rgba(246, 245, 248, .92); --label-ink: #1d1c1f; color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 420px; }
+.stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+#gl { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+#labels { position: absolute; inset: 0; pointer-events: none; }
+.tag { position: relative; font: 600 11.5px/1.25 var(--body); letter-spacing: .01em; color: var(--label-ink); background: var(--label-bg);
+  padding: 4px 8px; border-radius: 3px; white-space: nowrap; transform: translateY(calc(-50% - 22px)); }
+.tag::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1.5px; height: 18px; margin-left: -1px; background: var(--label-bg); }
+.topbar { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: 14px; display: flex; gap: 8px; align-items: center; }
+.badge { font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--panel);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.hud { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); right: 16px; bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; pointer-events: none; }
+.hud > *, .topbar > * { pointer-events: auto; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
+.seg button { font: 600 12px var(--body); color: var(--muted); background: none; border: 0; padding: 7px 11px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { color: var(--ink); background: var(--chip); }
+.explode { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; padding: 5px 11px; font: 600 12px var(--body); color: var(--muted); }
+.explode input { width: 110px; accent-color: var(--accent); }
+.hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font: 600 13px var(--mono); color: var(--muted); }
+
+.panel { background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0;
+  padding-right: env(safe-area-inset-right, 0px); }
+.head { padding: 18px 22px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.eyebrow { font: 600 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.head h1 { margin: 0; font: 800 26px/1.1 var(--display); font-stretch: 112%; letter-spacing: -.01em; text-wrap: balance; }
+.body { padding: 16px 22px; overflow-y: auto; flex: 1; min-height: 0; display: grid; align-content: start; gap: 14px; }
+.body ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+.body li::marker { font: 600 12px var(--mono); color: var(--accent); }
+.body p { margin: 0; }
+.note { font-size: 13.5px; color: var(--muted); border-left: 2px solid var(--chrome); padding-left: 10px; }
+.warn { font-size: 13.5px; border-left: 2px solid var(--accent); padding-left: 10px; }
+.kit { display: flex; flex-wrap: wrap; gap: 6px; }
+.wirenav { display: flex; align-items: center; gap: 8px; }
+.wirenav span { font: 600 12px var(--mono); color: var(--muted); flex: 1; text-align: center; font-variant-numeric: tabular-nums; }
+.wirecard { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
+.wirecard h2 { margin: 0; font: 700 16px/1.3 var(--body); display: flex; align-items: center; gap: 8px; }
+.wirecard h2 i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.wirecard dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13.5px; }
+.wirecard dt { color: var(--muted); } .wirecard dd { margin: 0; }
+.wirelist { list-style: none; margin: 0; padding: 0 4px 0 0; display: grid; gap: 2px; max-height: 260px; overflow-y: auto; border-top: 1px solid var(--line); padding-top: 6px; }
+.wirelist button { width: 100%; text-align: left; font: 500 13px var(--body); color: var(--ink); background: none; border: 0; border-radius: 4px;
+  padding: 5px 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.wirelist button i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.wirelist button span { margin-left: auto; font: 500 11.5px var(--mono); color: var(--muted); }
+.wirelist button[aria-current="true"] { background: var(--chip); font-weight: 700; }
+.kit span { font: 500 12px var(--mono); background: var(--chip); border-radius: 4px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 6px; }
+.kit i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 1px var(--muted); }
+.nav { padding: 12px 22px 16px; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.navrow { display: flex; gap: 8px; }
+.btn { font: 700 14px var(--body); border-radius: 6px; padding: 10px 14px; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); flex: 1; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn:focus-visible, .seg button:focus-visible, .dots button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dots { display: flex; flex-wrap: wrap; gap: 5px; }
+.dots button { font: 600 11px var(--mono); width: 28px; height: 26px; border-radius: 4px; border: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer; font-variant-numeric: tabular-nums; }
+.dots button[aria-current="step"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.pins { width: 100%; border-collapse: collapse; font: 500 12.5px var(--mono); }
+.pins td { padding: 3px 6px 3px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.pins td:first-child { color: var(--muted); }
+.pins td:last-child { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: 52% 48%; }
+  .panel { border-left: 0; border-top: 1px solid var(--line); padding-left: env(safe-area-inset-left, 0px); }
+  .head { padding: 12px 16px 10px; } .head h1 { font-size: 21px; }
+  .body { padding: 12px 16px; } .nav { padding: 10px 16px 12px; }
+  .hint { display: none; } .explode input { width: 80px; }
+  .hud { left: max(10px, env(safe-area-inset-left, 0px)); right: 10px; bottom: 10px; } .topbar { left: max(10px, env(safe-area-inset-left, 0px)); top: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="app">
+  <section class="stage" aria-label="3D model of the camera">
+    <canvas id="gl"></canvas>
+    <div id="labels"></div>
+    <div class="loading" id="loading">Loading parts…</div>
+    <div class="topbar"><span class="badge">Retro body · v4</span></div>
+    <div class="hud">
+      <div class="seg" role="group" aria-label="View">
+        <button id="v-back" aria-pressed="false">Back</button>
+        <button id="v-front" aria-pressed="false">Front</button>
+        <button id="v-top" aria-pressed="false">Top</button>
+      </div>
+      <div class="seg" role="group" aria-label="Case">
+        <button id="t-case" aria-pressed="true">Case shown</button>
+      </div>
+      <label class="explode" for="ex">Pull apart <input id="ex" type="range" min="0" max="1" step="0.01" value="0"></label>
+      <span class="hint">Drag to turn · scroll to zoom · ← → to step</span>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="head">
+      <span class="eyebrow" id="count">Step 1 of 15</span>
+      <h1 id="title">All the parts</h1>
+    </div>
+    <div class="body" id="text"></div>
+    <div class="nav">
+      <div class="navrow">
+        <button class="btn" id="prev" aria-label="Previous step">Back</button>
+        <button class="btn" id="replay">Replay</button>
+        <button class="btn primary" id="next">Next step</button>
+      </div>
+      <div class="dots" id="dots" aria-label="Steps"></div>
+    </div>
+  </aside>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+
+// ------------------------------------------------------------------ the body (cad/camera1_v4.scad)
+// Model X runs left to right seen from the back, Y up, Z back to front.
+const B = { W: 128, H: 58, TOP: 68.2, BOT: -5, Z0: 0, Z1: 22.1, D: 20.9, zfi: 18.5, zmid: 10.25 };
+const PORTRAIT = { x0: 6.395, y0: 8, w: 46.81, h: 44, z: -1.21 };
+const WIRE = { black: "#26232b", red: "#d6393b", blue: "#2f6fd6", tan: "#d8c39a" };
+const GREY_SCREW = "#80848c", BRASS = "#c9a24a", BODY = "#74472c", SILVER = "#d8d6d0", LEATHER = "#7a4a2e";
+
+// colour, roughness, metalness, opacity, emissive, pull-apart offset, wire flag
+const P = {
+  frame:          { c: BODY, r: .55, ex: [0, 0, 0] },
+  inserts:        { c: BRASS, r: .3, m: .9, ex: [0, 0, 0] },
+  back_plate:     { c: BODY, r: .5, ex: [0, 0, -46] },
+  screws_back:    { c: GREY_SCREW, r: .35, m: .8, ex: [0, 0, -64] },
+  caps:           { c: SILVER, r: .4, m: .3, ex: [0, 0, -58] },
+  carrier:        { c: "#8d8b93", r: .5, ex: [0, 0, -30] },
+  buttons:        { c: "#2b2a30", r: .5, ex: [0, 0, -30] },
+  screws_carrier: { c: GREY_SCREW, r: .35, m: .8, ex: [0, 0, -22] },
+  screen_glass:   { c: "#121219", r: .2, ex: [0, 0, -18] },
+  screen_active:  { c: "#6a5fb0", r: .25, e: "#3a2f7a", ex: [0, 0, -18] },
+  screen_pcb:     { c: "#2a4a9b", r: .6, ex: [0, 0, -18] },
+  screen_pads:    { c: "#d9ad4f", r: .3, m: .8, ex: [0, 0, -18] },
+  screen_pad:     { c: "#e9e3ec", r: .9, ex: [0, 0, -10] },
+  battery:        { c: "#cdc6b4", r: .35, m: .5, ex: [0, 0, 14] },
+  foam:           { c: "#e9e3ec", r: .9, ex: [0, 0, 8] },
+  deck:           { c: "#dcd7ce", r: .7, ex: [0, 0, 20] },
+  screws_deck:    { c: GREY_SCREW, r: .35, m: .8, ex: [0, 0, 26] },
+  board_pcb:      { c: "#1f5a44", r: .6, ex: [0, 0, 32] },
+  board_pads:     { c: "#d9ad4f", r: .3, m: .8, ex: [0, 0, 32] },
+  board_module:   { c: "#b9bdc6", r: .3, m: .75, ex: [0, 0, 32] },
+  board_parts:    { c: "#9ea2ab", r: .35, m: .6, ex: [0, 0, 32] },
+  screws_board:   { c: GREY_SCREW, r: .35, m: .8, ex: [0, 0, 40] },
+  camera_tape:    { c: "#e9e3ec", r: .9, ex: [0, 0, 38] },
+  camera:         { c: "#24232a", r: .5, ex: [0, 0, 44] },
+  camera_glass:   { c: "#6d8fb3", r: .15, m: .3, ex: [0, 0, 44] },
+  ribbon:         { c: "#c47a22", r: .4, ex: [0, 0, 40] },
+  cradle:         { c: "#c4beb2", r: .7, ex: [0, 0, 24] },
+  charger_pcb:    { c: "#2f62c9", r: .6, ex: [0, 0, 30] },
+  charger_parts:  { c: "#b9bdc6", r: .35, m: .7, ex: [0, 0, 30] },
+  resistors:      { c: WIRE.tan, r: .6, ex: [0, 0, 30] },
+  shutter_sw:     { c: "#2b2a30", r: .5, ex: [0, 22, 0] },
+  slide_sw:       { c: "#2b2a30", r: .5, ex: [0, 22, 0] },
+  shutter_cap:    { c: SILVER, r: .4, m: .3, ex: [0, 42, 0] },
+  knob:           { c: SILVER, r: .4, m: .3, ex: [0, 42, 0] },
+  top_plate:      { c: SILVER, r: .35, m: .35, ex: [0, 30, 0] },
+  top_bits:       { c: SILVER, r: .4, m: .3, ex: [0, 38, 0] },
+  windows:        { c: "#141317", r: .15, ex: [0, 26, 0] },
+  bottom_plate:   { c: SILVER, r: .35, m: .35, ex: [0, -30, 0] },
+  screws_bottom:  { c: GREY_SCREW, r: .35, m: .8, ex: [0, -46, 0] },
+  screws_top:     { c: GREY_SCREW, r: .35, m: .8, ex: [0, 48, 0] },
+  front_plate:    { c: BODY, r: .5, ex: [0, 0, 52] },
+  screws_front:   { c: GREY_SCREW, r: .35, m: .8, ex: [0, 0, 66] },
+  lens_barrel:    { c: SILVER, r: .3, m: .45, ex: [0, 0, 74] },
+  inserts_barrel: { c: BRASS, r: .3, m: .9, ex: [0, 0, 74] },
+  screws_barrel:  { c: GREY_SCREW, r: .35, m: .8, ex: [0, 0, 60] },
+  covering_front: { c: LEATHER, r: .85, ex: [0, 0, 86] },
+  covering_back:  { c: LEATHER, r: .85, ex: [0, 0, -78] },
+  w_bat_red:  { c: WIRE.red, r: .5, wire: 1 }, w_bat_black: { c: WIRE.black, r: .5, wire: 1 },
+  w_out_plus: { c: WIRE.red, r: .5, wire: 1 }, w_5v: { c: WIRE.red, r: .5, wire: 1 },
+  w_gnd:      { c: WIRE.black, r: .5, wire: 1 }, w_sense: { c: WIRE.blue, r: .5, wire: 1 },
+  w_btn_left: { c: WIRE.blue, r: .5, wire: 1 }, w_btn_ok: { c: WIRE.blue, r: .5, wire: 1 }, w_btn_right: { c: WIRE.blue, r: .5, wire: 1 },
+  w_shutter:  { c: WIRE.blue, r: .5, wire: 1 },
+  w_bgnd_chain: { c: WIRE.black, r: .5, wire: 1 }, w_bgnd_shutter: { c: WIRE.black, r: .5, wire: 1 }, w_bgnd_board: { c: WIRE.black, r: .5, wire: 1 },
+};
+// screen wires, bottom to top at the screen's pins: BLK CS DC RES SDA SCL VCC GND
+for (let i = 0; i < 8; i++) P["w_screen_" + i] = { c: i === 6 ? WIRE.red : i === 7 ? WIRE.black : WIRE.blue, r: .5, wire: 1 };
+
+// ------------------------------------------------------------------ the steps
+const kit = (...items) => `<div class="kit">${items.map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join("")}</div>`;
+const pins = rows => `<table class="pins">${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
+const ALL = Object.keys(P);
+const WIRES = ALL.filter(k => P[k].wire);
+const SCREENW = Array.from({ length: 8 }, (_, i) => "w_screen_" + i);
+const ELEC = ["battery", "screen_glass", "screen_active", "screen_pcb", "screen_pads", "board_pcb", "board_pads", "board_module", "board_parts",
+              "camera", "camera_glass", "camera_tape", "ribbon", "charger_pcb", "charger_parts", "resistors", "buttons", "shutter_sw", "slide_sw"];
+const FRAME = ["frame", "inserts"];
+const BTN = ["caps", "buttons", "carrier", "screws_carrier"];
+const SCREEN = ["screen_glass", "screen_active", "screen_pcb", "screen_pads", "screen_pad"];
+const BOARD = ["board_pcb", "board_pads", "board_module", "board_parts", "camera_tape", "camera", "camera_glass", "ribbon", "screws_board"];
+const POWER = ["cradle", "charger_pcb", "charger_parts", "resistors", "w_bat_red", "w_bat_black", "w_gnd", "w_sense"];
+const TOP = ["shutter_sw", "slide_sw", "shutter_cap", "knob", "top_plate", "top_bits", "windows", "screws_top", "w_out_plus", "w_5v", "w_shutter", "w_bgnd_shutter"];
+const FRONT = ["front_plate", "screws_front", "lens_barrel", "inserts_barrel", "screws_barrel"];
+const s4 = ["back_plate", ...BTN];
+const s5 = [...s4, ...SCREEN];
+const s6 = [...s5, ...FRAME, "screws_back"];
+const s7 = [...s6, "battery", "foam"];
+const s8 = [...s7, "deck", "screws_deck", ...SCREENW];
+const s9 = [...s8, "w_btn_left", "w_btn_ok", "w_btn_right", "w_bgnd_chain", "w_bgnd_board"];
+const s10 = [...s9, ...BOARD];
+const s11 = [...s10, ...POWER];
+const s12 = [...s11, ...FRONT];
+const s13 = [...s12, ...TOP];
+const s13b = [...s13, "bottom_plate", "screws_bottom"];
+const s14 = [...s13b, "covering_front", "covering_back"];
+const lift = (list, d) => Object.fromEntries(list.map(k => [k, d]));
+const NOT_CASE = ["frame", "inserts", "screws_back"];
+
+const STEPS = [
+  { title: "All the parts", view: "side", explode: 1, show: ALL.filter(k => !P[k].wire),
+    text: `<p>The retro body rebuilt around the parts as measured, dressed like a Leica M6 in brown and in its proportions: a brown body (frame between two plates, leather front, back and ends), a silver cover that comes a third of the way down the front and the ends, and a silver bottom plate. It's a left-handed M6: the shutter, speed dial and advance lever are on the left as you hold it, the knob on the right. Inside, a wiring deck over the screen and a power cradle on the battery.</p>
+      <p>Pull the slider to take it apart. The steps follow <b>13-assembly-guide-v4.md</b>: solder and test everything on the desk, then build up from the back plate.</p>
+      ${kit([BODY, "frame, plates"], [LEATHER, "coverings"], [SILVER, "top cover, bottom plate, lens, controls"], ["#dcd7ce", "wiring deck"], ["#c4beb2", "power cradle"], ["#8d8b93", "button carrier"])}
+      <p class="note">The deck, cradle and carrier print in brown on the test-first plate (they're hidden); they're shown lighter here so you can tell them apart.</p>` },
+  { title: "Press in the inserts", view: "front3q", show: [...FRAME, "lens_barrel", "inserts_barrel"], hide: [], enter: { inserts: [0, 0, 14], inserts_barrel: [0, 0, 12] },
+    labels: { inserts: ["8 in the posts, 2 + 2 for the deck and board, 2 under the top, 2 in the bottom", [5.8, 5.8, 18.6]], inserts_barrel: "3 in the barrel's back" },
+    text: `<ol><li>Spare iron tip at about <b>200 °C</b> (PLA). Let each insert sink in under a light, straight push until it's flush.</li>
+      <li>Frame: one in each end of the 4 corner posts (8), one in each of the 2 deck bosses at the bottom and the 2 under the board's holes, 2 under the top wall from the top, and 2 in the bottom wall from below (for the bottom plate).</li>
+      <li>Lens barrel: 3 from its back face.</li></ol>
+      ${kit([BRASS, "16 + 3 × M2 heat-set insert"])}` },
+  { title: "Solder everything on the desk", view: "front3q", show: [...ELEC, ...WIRES], ghost: [], hideCase: true,
+    labels: { w_screen_4: ["8 screen wires", [55.8, 30, 7]], w_gnd: ["OUT− to GND", [82, 11.2, 8.1]], resistors: "2 × 100k at the module",
+              w_out_plus: ["OUT+ along the top to the switch", [64, 48.6, 16.7]] },
+    text: `<p>Everything is soldered and tested while it's loose. Lengths are in the guide; cut a little long.</p>
+      <p class="warn">Every board wire goes <b>up through its pad from underneath</b> and is soldered on top.</p>
+      ${pins([["Screen VCC", "3V3", "60"], ["Screen GND", "GND", "90"], ["SCL", "GPIO 21", "85"], ["SDA", "GPIO 47", "85"], ["RES", "EN", "55"],
+              ["DC", "GPIO 45", "85"], ["CS", "GPIO 19", "100"], ["BLK", "GPIO 20", "100"], ["Left button", "GPIO 3", "55"], ["OK button", "GPIO 46", "45"],
+              ["Right button", "GPIO 48", "95"], ["Shutter", "GPIO 14", "135"], ["Switches' other feet", "GND", "75"], ["… and on", "shutter's other leg", "90"], ["Module OUT+", "switch middle", "135"],
+              ["Switch end leg", "5V", "50"], ["Module OUT−", "GND", "150"], ["Resistors' middle", "GPIO 1", "95"]])}
+      <p class="note">Right column: cut length in mm. The next step goes through them one wire at a time. Flash the v4 firmware first (its pins match this table), then test: the screen lights, every button and the shutter work, and it runs on the battery through the switch.</p>` },
+  { title: "Wire by wire", view: "front3q", wires: true, show: [...ELEC, ...WIRES, "screen_pads"], hideCase: true,
+    text: `<p>Each wire on its own: where it starts, where it goes, and the way it runs. Pick one from the list, or step through them. ↑ ↓ also work.</p>` },
+  { title: "Buttons into the back plate", view: "front3q", show: s4,
+    enter: { caps: [0, 0, 12], buttons: [0, 0, 18], carrier: [0, 0, 24], screws_carrier: [0, 0, 32] },
+    labels: { caps: "Caps in from inside", carrier: ["Switches snap in, plungers to the caps", [83.8, 47, 13.5]], screws_carrier: "2 × M2×6" },
+    text: `<ol><li>Back plate face down on a cloth. Drop the three caps into their sleeves from inside; the side caps' key ribs go into the slots.</li>
+      <li>Push each switch into its carrier pocket until the two fingers click over its metal top, wires out through the floor slots.</li>
+      <li>Screw the carrier to its two posts: 2 × M2×6 straight into the plastic.</li></ol>
+      <p class="note">Press each cap from outside: one click each, no wobble.</p>
+      ${kit([SILVER, "3 caps"], ["#2b2a30", "3 switches"], [GREY_SCREW, "2 × M2×6"])}` },
+  { title: "Screen onto its pins", view: "front3q", show: s5, enter: lift(SCREEN, [0, 0, 14]),
+    labels: { screen_pcb: ["Glass down into its pocket, over the 4 pins", [84.85, 27.7, 4.8]], screen_pad: "Two 1.5 mm foam strips, along the long edges" },
+    text: `<ol><li>Peel the film. Lay the screen glass down so the four pins on the back plate go through its corner holes: the glass drops into its pocket, picture over the window.</li>
+      <li>Its pins go toward the board's module end (the 3V3 end), where the deck's notch will be. Turned this way, the firmware turns the picture round (<b>LCD_TURNED</b> in pins.h).</li>
+      <li>Stick two strips of 1.5 mm foam (or 1 + 0.5 mm stacked) along its back's long edges, clear of the gold flex and the small parts by the pins. The deck presses on them, so the screen needs no glue.</li></ol>
+      <p class="note">The glass rests on the pocket's floor; the four pins only locate it, through its corner holes. Nothing holds the board up off the glass.</p>` },
+  { title: "Frame onto the back plate", view: "side", show: s6, enter: { frame: [0, 0, 18], inserts: [0, 0, 18], screws_back: [0, 0, -14] },
+    labels: { screws_back: ["4 countersunk M2×5 from the back", [122.2, 5.8, -0.2]] },
+    text: `<ol><li>Lower the frame onto the back plate, keeping the wires out.</li>
+      <li>Hold them together, turn them over, and fit the 4 countersunk screws through the back plate into the posts.</li></ol>
+      <p class="note">All four go under the back covering later.</p>
+      ${kit([GREY_SCREW, "4 × M2×5 countersunk"])}` },
+  { title: "Battery into its bay", view: "front3q", show: s7, enter: { battery: [0, 0, 20], foam: [0, 0, 20] },
+    labels: { battery: "Leads out of its top edge, by the charge module", foam: "1 mm foam tape" },
+    text: `<ol><li>Two strips of 1 mm foam tape on the battery's back.</li>
+      <li>Push it against the two spring tabs on the left, then down past the tab above it, into the bay. Leads at its top edge by the charge module (top right, seen from the front), where the corner is left open for them.</li></ol>
+      <p class="note">The tabs push it gently (about 1 N each) against the divider and the bottom wall: it can't rattle, and nothing presses hard on the cell.</p>` },
+  { title: "Wiring deck over the screen", view: "front3q", show: s8, enter: { deck: [0, 0, 18], screws_deck: [0, 0, 26] },
+    labels: { deck: ["Notch: the screen's bundle slides in here", [55, 20, 6.1]], screws_deck: "2 × M2×4" },
+    text: `<ol><li>Lower the deck onto the screen's foam pad, sliding the screen's 8 wires into the notch from the deck's bottom edge. Its big opening sits over the screen's flex and small parts, so it lies flat on the foam and its tabs reach the bosses.</li>
+      <li>Two screws through its bottom tabs: 2 × M2×4.</li></ol>
+      <p class="note">The two long ribs carry the board between its pad rows. Along each row runs an open lane, under the board's edge and on beside it: room for a row's 26 AWG wires side by side.</p>
+      ${kit(["#dcd7ce", "wiring deck"], [GREY_SCREW, "2 × M2×4"])}` },
+  { title: "Wires into the lanes", view: "front3q", show: s9, ghost: [...NOT_CASE, "back_plate", "screen_pcb"],
+    labels: { w_screen_6: ["3V3 and EN: the top lane", [68, 41.7, 6.9]], w_screen_2: ["DC, SDA, SCL, BLK, CS, GND: the bottom lane", [104, 16.3, 6.9]],
+              w_btn_ok: ["Button wires in through the wall gaps", [100, 47, 14]] },
+    text: `<ol><li>Lay each wire in its lane from the notch: the screen's VCC and RES into the top row's first two pads, the other six along the bottom row toward the USB end.</li>
+      <li>The buttons' wires come down beside the carrier into the top lane. The lanes are open at the side, so wires lie side by side, beside the board where there's no room under it, and each turns in under the board at its own pad.</li>
+      <li>Wires that change rows (the right button, the GND chain) cross at the USB end, by the notch.</li></ol>
+      <p class="note">Nothing goes over the board: every wire comes up through its pad from underneath.</p>` },
+  { title: "Board down", view: "front3q", show: s10, enter: { ...lift(["board_pcb", "board_pads", "board_module", "board_parts"], [0, 0, 16]),
+             camera_tape: [0, 0, 20], camera: [0, 0, 24], camera_glass: [0, 0, 24], ribbon: [0, 0, 24], screws_board: [0, 0, 30] },
+    labels: { board_parts: ["TTL USB-C into its hole", [125.9, 23.6, 12.3]], screws_board: "2 × M2×8 through board and deck", camera: "Lens up, on thin (0.2 mm) double-sided tape" },
+    text: `<ol><li>Set the board on the ribs, component side up, USB end to the right wall: the TTL socket goes into its hole.</li>
+      <li>Two M2×8 screws through the board's holes and the deck into the frame.</li>
+      <li>A square of thin (0.2 mm) double-sided tape on the ESP32 module's shield (not foam: the camera has 0.2 mm to spare under the front plate); fold the camera onto it, lens up. Bend the ribbon gently, never crease it.</li></ol>
+      ${kit(["#1f5a44", "ESP32-S3 board"], [GREY_SCREW, "2 × M2×8"])}` },
+  { title: "Power cradle on the battery", view: "front3q", show: s11,
+    enter: { cradle: [0, 0, 16], charger_pcb: [0, 0, 24], charger_parts: [0, 0, 24], resistors: [0, 0, 24],
+             ...lift(["w_bat_red", "w_bat_black", "w_gnd", "w_sense"], [0, 0, 10]) },
+    labels: { charger_parts: ["USB-C into the left wall", [2.1, 36, 15.6]], resistors: "Resistors in the porch", w_gnd: ["Down the groove, along the bottom", [44, 6, 15.7]] },
+    text: `<ol><li>Lay the cradle on the battery's front: it fits round the two corner posts, so it goes in one way only.</li>
+      <li>The charge module into its pocket, USB-C into its hole in the end wall, pads facing in. Test that a cable goes fully in.</li>
+      <li>The battery's leads come out of its top edge into the open lane along the top, then down the groove to B+ and B−. Solder so the wires leave the pads flat, along the board.</li>
+      <li>The two resistors (the battery gauge) lie in the porch: one leg soldered straight onto the module's B+ pad beside the battery wire, the other onto its − pad; their free legs twisted together with the GPIO 1 wire, soldered and heat-shrunk.</li>
+      <li>The 5V out (+) back up the groove and along the top to the switch; the − out (GND) and the GPIO 1 wire down the other groove and along the bottom, over the divider, onto the deck.</li></ol>
+      <p class="note">Test now, while it's open: the camera starts on the switch, the screen lights, the buttons and the shutter work, and the charge LED lights on a cable.</p>
+      ${kit(["#c4beb2", "power cradle"], ["#2f62c9", "charge module"], [WIRE.tan, "2 × 100k"])}` },
+  { title: "Front plate and lens barrel", view: "front3q", show: s12,
+    enter: { front_plate: [0, 0, 24], screws_front: [0, 0, 34], lens_barrel: [0, 0, 34], inserts_barrel: [0, 0, 34], screws_barrel: [0, 0, 10] },
+    labels: { screws_front: ["4 countersunk M2×5", [5.8, 5.8, 20.9]], lens_barrel: "Barrel first: 3 screws from inside" },
+    text: `<ol><li>Screw the lens barrel to the front plate from inside, 3 × M2×5 into its inserts. Its base is the mount ring, with the lens release and frame selector on it.</li>
+      <li>Lower the plate. Its square collar slides over the camera and centres the lens; its rim presses on the charge module and cradle.</li>
+      <li>4 countersunk screws into the posts.</li></ol>
+      ${kit([GREY_SCREW, "4 × M2×5 countersunk + 3 × M2×5"], [SILVER, "lens barrel"])}` },
+  { title: "Silver top cover", view: "top3q", show: s13,
+    enter: { shutter_sw: [0, 10, 0], slide_sw: [0, 10, 0], shutter_cap: [0, 18, 0], knob: [0, 18, 0], top_plate: [0, 22, 0], top_bits: [0, 30, 0],
+             windows: [0, 22, 0], screws_top: [0, 36, 0], ...lift(["w_out_plus", "w_5v", "w_shutter", "w_bgnd_shutter"], [0, 8, 0]) },
+    labels: { screws_top: ["2 countersunk screws from the top", [50.5, 68.2, 10.25]], shutter_sw: ["Up through its passage", [20, 61, 10.25]],
+              top_bits: ["Speed dial, shoe, advance lever: CA", [62, 68.2, 10.25]] },
+    text: `<ol><li>Inside the cover: glue the dark window card behind the two front windows. Black in the eyepiece and the frame counter with a marker.</li>
+      <li>Pass the shutter switch and the slide switch, wires and all, up through their passages in the frame's top wall.</li>
+      <li>Shutter cap first, from inside: its stem up through the cradle and out of the top, flange under the ceiling.</li>
+      <li>Shutter switch (the same 6 × 6 four-leg switch as the buttons) up into its cradle, plunger first, until it clicks; legs out through the side notches. Slide switch into its pocket, knob through the slot, with a dot of hot glue.</li>
+      <li>Slide the cover down: its front and ends come down over the frame to the leather line. 2 × M2×14 countersunk from the top.</li>
+      <li>Glue on the speed dial, the shoe and the advance lever (its hub round the shutter).</li></ol>
+      <p class="note">The cover goes on after the front plate: it hides the front plate's top two screws.</p>
+      ${kit([SILVER, "top cover, dial, shoe, lever, knob"], ["#141317", "window card"], [GREY_SCREW, "2 × M2×14 countersunk"])}` },
+  { title: "Bottom plate", view: "under3q", show: s13b, enter: { bottom_plate: [0, -16, 0], screws_bottom: [0, -28, 0] },
+    labels: { screws_bottom: ["2 countersunk M2×8 from below", [117, -5, 10.25]], bottom_plate: ["Its peg: into the hole under the shutter's end", [20, -5, 10.25]] },
+    text: `<ol><li>Set the silver bottom plate under the body, its small peg into the hole in the bottom wall (under the shutter's end).</li>
+      <li>Two countersunk M2×8 from below into the inserts.</li></ol>
+      <p class="note">Like the M6's base plate: the maker's line and a lock key are engraved underneath.</p>
+      ${kit([SILVER, "bottom plate"], [GREY_SCREW, "2 × M2×8 countersunk"])}` },
+  { title: "Coverings", view: "back3q", show: s14, enter: { covering_front: [0, 0, 12], covering_back: [0, 0, -12] },
+    labels: { covering_back: ["The whole back: hides all four screws", [33, 30, -1.2]], covering_front: "Up to the silver cover's edge" },
+    text: `<ol><li>Thin double-sided tape on both coverings.</li>
+      <li>The front covering drops into the rim below the silver cover, round the lens's mount ring, and hides the front plate's bottom screws.</li>
+      <li>The back covering, with the portrait, covers the whole back round the screen and the buttons, and hides all four back screws. Round the screen it's smooth and stands a little proud, like a frame.</li></ol>
+      <p class="note">To open the camera later: undo the 2 top screws and lift the cover, peel the front covering, undo the 4 front screws.</p>
+      <p class="note">Wrist strap: thread its cord in one of the two small holes at either end and out of the other.</p>
+      ${kit([LEATHER, "2 coverings"])}` },
+  { title: "Done", view: "back3q", show: s14, spin: true,
+    text: `<p>128 × 73 × 22 mm, plus the lens barrel: the Leica M6's width to height. Charge through the USB-C on the right side seen from the front; the board's TTL socket on the left side is for firmware.</p>
+      <p>Tap <b>Case hidden</b> to see the deck and the wiring inside.</p>
+      <p class="note">A few board dimensions are still estimates (the TTL socket position, how far the sockets stick out, the PCB thickness). Check them against your board before printing the frame.</p>` },
+];
+
+// ------------------------------------------------------------------ the wires, one at a time (step "Wire by wire")
+// len: the key in wire-lengths-v4.json (bundled as models.json's _lengths)
+const W_BAT = "Battery + / − to module B+ / B− (the battery's own leads)";
+const WIRE_INFO = [
+  { k: "w_screen_6", from: "Screen VCC", to: "3V3 (3V3 row, pad 1)", type: "30 AWG red", len: "Screen VCC to 3V3",
+    how: "Up through the deck's notch at the module end, straight into the top lane, up through the first pad (3V3) from underneath. Solder on top." },
+  { k: "w_screen_7", from: "Screen GND", to: "GND (GND row, pad 20)", type: "30 AWG black", len: "Screen GND to GND",
+    how: "Up through the notch, along the bottom lane the length of the board to the USB end, up through the GND pad. That pad takes three wires: this one, OUT− and the switches' chain." },
+  { k: "w_screen_5", from: "Screen SCL", to: "GPIO 21 (GND row, pad 17)", type: "30 AWG", len: "Screen SCL to GPIO 21",
+    how: "Up through the notch, along the bottom lane toward the USB end, up through its pad from underneath." },
+  { k: "w_screen_4", from: "Screen SDA", to: "GPIO 47 (GND row, pad 16)", type: "30 AWG", len: "Screen SDA to GPIO 47",
+    how: "Up through the notch, along the bottom lane toward the USB end, up through its pad from underneath." },
+  { k: "w_screen_3", from: "Screen RES", to: "EN (3V3 row, pad 2)", type: "30 AWG", len: "Screen RES to EN",
+    how: "Up through the notch, into the top lane, up through EN, the second pad from the module end." },
+  { k: "w_screen_2", from: "Screen DC", to: "GPIO 45 (GND row, pad 14)", type: "30 AWG", len: "Screen DC to GPIO 45",
+    how: "Up through the notch, along the bottom lane toward the USB end, up through its pad from underneath." },
+  { k: "w_screen_1", from: "Screen CS", to: "GPIO 19 (GND row, pad 19)", type: "30 AWG", len: "Screen CS to GPIO 19",
+    how: "Up through the notch, along the bottom lane nearly to the USB end, up through its pad." },
+  { k: "w_screen_0", from: "Screen BLK", to: "GPIO 20 (GND row, pad 18)", type: "30 AWG", len: "Screen BLK to GPIO 20",
+    how: "Up through the notch, along the bottom lane nearly to the USB end, up through its pad." },
+  { k: "w_btn_left", from: "Left button (signal foot)", to: "GPIO 3 (3V3 row, pad 12)", type: "30 AWG", len: "Left button to GPIO 3",
+    how: "From the switch's foot through the carrier's floor, down beside the carrier, along the top lane, up through the pad." },
+  { k: "w_btn_ok", from: "OK button (signal foot)", to: "GPIO 46 (3V3 row, pad 13)", type: "30 AWG", len: "OK button to GPIO 46",
+    how: "Down beside the carrier, along the top lane, up through the pad." },
+  { k: "w_btn_right", from: "Right button (signal foot)", to: "GPIO 48 (GND row, pad 15)", type: "30 AWG", len: "Right button to GPIO 48 (crosses at the USB end)",
+    how: "Down into the top lane, along to the USB end, across to the bottom lane by the notch, back along it to the pad." },
+  { k: "w_bgnd_chain", from: "Left button's other foot", to: "OK and right buttons' other feet", type: "30 AWG black", lenText: "2 jumpers, about 15 mm each",
+    how: "Short jumpers across the carrier, joining the three switches' GND feet (use diagonal feet on each switch)." },
+  { k: "w_bgnd_shutter", from: "Left button's other foot", to: "Shutter switch's other leg", type: "30 AWG black", len: "Buttons' GND chain on to the shutter's other leg",
+    how: "Up over the carrier, along the top lane to the left end, up through the shutter's passage to its switch." },
+  { k: "w_bgnd_board", from: "Right button's other foot", to: "GND (GND row, pad 20)", type: "30 AWG black", len: "Buttons' and shutter's GND chain to GND",
+    how: "Down into the top lane, across to the bottom one at the USB end, up through the GND pad with the others." },
+  { k: "w_shutter", from: "Shutter switch (signal leg)", to: "GPIO 14 (3V3 row, pad 19)", type: "30 AWG", len: "Shutter to GPIO 14",
+    how: "Down through the shutter's passage at the left end, along the top lane over the carrier, down into the top lane at the USB end, up through the pad." },
+  { k: "w_bat_red", from: "Battery +", to: "Charge module B+", type: "the battery's own red lead", len: W_BAT,
+    how: "Out of the battery's top edge into the open lane along the top, left to the cradle's groove, down it into the porch and onto B+." },
+  { k: "w_bat_black", from: "Battery −", to: "Charge module B−", type: "the battery's own black lead", len: W_BAT,
+    how: "Beside the red lead, down the same groove to B−." },
+  { k: "w_out_plus", from: "Charge module + (5V out)", to: "Slide switch, middle leg", type: "26 AWG red", len: "Module OUT+ to the switch's middle leg (26 AWG red)",
+    how: "From the porch up the cradle's groove beside the battery leads, along the top lane to the right end, up through the switch's passage." },
+  { k: "w_5v", from: "Slide switch, end leg", to: "5V (3V3 row, pad 20)", type: "26 AWG red", len: "Switch end leg to 5V (26 AWG red)",
+    how: "Down through the passage, past the carrier, into the top lane at the USB end, up through the 5V pad." },
+  { k: "w_gnd", from: "Charge module − (GND out)", to: "GND (GND row, pad 20)", type: "26 AWG black", len: "Module OUT− to GND (26 AWG black)",
+    how: "From the porch down the cradle's groove and along the bottom, over the divider, along the deck beside the board's bottom edge, up through GND (push this thicker one through the hole)." },
+  { k: "w_sense", from: "Resistors' middle (battery level)", to: "GPIO 1 (GND row, pad 3)", type: "30 AWG", len: "Battery level: resistors' middle to GPIO 1 (30 AWG)",
+    how: "From the resistors' middle (B+ to one, the module's − to the other), beside the GND wire down the groove and along the bottom, onto the deck, up through its pad near the module end." },
+];
+let wireIndex = 0;
+
+// ------------------------------------------------------------------ scene
+const canvas = document.getElementById("gl");
+const stage = canvas.parentElement;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const labelRenderer = new CSS2DRenderer({ element: document.getElementById("labels") });
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(30, 1, 1, 2000);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.minDistance = 60;
+controls.maxDistance = 700;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f8c, 1.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-120, 160, -140); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 1.1); fill.position.set(140, 60, 160); scene.add(fill);
+
+// Model space is a mirror of real space: flip X once, centred on the body
+const root = new THREE.Group();
+root.scale.set(-1, 1, 1);
+root.position.set(B.W / 2, -(B.TOP + B.BOT) / 2, -(B.Z0 + B.Z1) / 2);
+scene.add(root);
+
+const VIEWS = {
+  side: [1, 0.45, -0.55], back3q: [0.42, 0.32, -1], front3q: [-0.42, 0.32, 1], top3q: [0.25, 1.1, 0.75],
+  back: [0, 0.02, -1], front: [0, 0.02, 1], top: [0, 1, -0.12], under3q: [-0.45, -0.7, 1],
+};
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const grey = new THREE.Color("#9aa0a6");
+const loader = new STLLoader();
+const unpack = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+let bundle;
+try {
+  bundle = await (await fetch("models.json")).json();
+} catch (e) {
+  document.getElementById("loading").textContent = "The 3D parts couldn't load. Reload the page to try again.";
+  throw e;
+}
+document.getElementById("loading").remove();
+
+const meshes = {};
+for (const name of Object.keys(P)) {
+  const data = bundle[name];
+  if (!data) { delete P[name]; continue; }
+  const geo = loader.parse(unpack(data));
+  geo.computeVertexNormals();
+  const p = P[name];
+  const mat = new THREE.MeshStandardMaterial({ color: p.c, roughness: p.r ?? .5, metalness: p.m ?? 0,
+    transparent: p.o != null, opacity: p.o ?? 1, depthWrite: p.o == null,
+    emissive: p.e ? new THREE.Color(p.e) : new THREE.Color(0), side: THREE.DoubleSide });
+  const mesh = new THREE.Mesh(geo, mat);
+  geo.computeBoundingBox();
+  mesh.userData = { base: new THREE.Color(p.c), baseOpacity: p.o ?? 1,
+                    top: geo.boundingBox.getCenter(new THREE.Vector3()).setY(geo.boundingBox.max.y) };
+  root.add(mesh);
+  meshes[name] = mesh;
+}
+// the portrait, drawn from art/portrait.svg, on the back covering's outer face
+new THREE.TextureLoader().load("portrait.png", tex => {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(PORTRAIT.w, PORTRAIT.h),
+    new THREE.MeshStandardMaterial({ map: tex, transparent: true, roughness: .6, side: THREE.DoubleSide, depthWrite: false }));
+  plane.position.set(PORTRAIT.x0 + PORTRAIT.w / 2, PORTRAIT.y0 + PORTRAIT.h / 2, PORTRAIT.z);
+  plane.scale.set(-1, 1, 1);   // seen from the back, as drawn
+  plane.renderOrder = 3;
+  meshes.covering_back?.add(plane);
+});
+
+const dots = document.getElementById("dots");
+STEPS.forEach((s, i) => {
+  const btn = document.createElement("button");
+  btn.textContent = i + 1;
+  btn.title = s.title;
+  btn.setAttribute("aria-label", `Step ${i + 1}: ${s.title}`);
+  btn.addEventListener("click", () => goTo(i));
+  dots.appendChild(btn);
+});
+
+let stepIndex = 0, explode = 0, caseShown = true, anim = null, camAnim = null;
+const labelObjs = [];
+const ease = t => 1 - Math.pow(1 - t, 3);
+const CASE = ["frame", "back_plate", "front_plate", "top_plate", "covering_front", "covering_back", "windows", "frost", "top_bits", "lens_barrel",
+              "bottom_plate", "screws_bottom",
+              "screws_back", "screws_front", "screws_top", "screws_barrel", "inserts", "inserts_barrel", "caps", "carrier", "screws_carrier",
+              "shutter_cap", "knob"];
+
+function framing() {
+  placeAll(1);
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  for (const m of Object.values(meshes)) if (m.visible) box.expandByObject(m);
+  if (box.isEmpty()) box.setFromObject(root);
+  const sphere = box.getBoundingSphere(new THREE.Sphere());
+  const v = THREE.MathUtils.degToRad(camera.fov) / 2;
+  const h = Math.atan(Math.tan(v) * camera.aspect);
+  return { centre: sphere.center, dist: sphere.radius / Math.sin(Math.min(v, h)) * 0.98 };
+}
+function setView(name, instant) {
+  const f = framing();
+  const pos = new THREE.Vector3(...VIEWS[name]).normalize().multiplyScalar(f.dist).add(f.centre);
+  ["back", "front", "top"].forEach(k => document.getElementById("v-" + k).setAttribute("aria-pressed", String(k === name)));
+  if (instant || reduced) { camera.position.copy(pos); controls.target.copy(f.centre); return; }
+  camAnim = { from: camera.position.clone(), fromT: controls.target.clone(), to: pos, toT: f.centre.clone(), t0: performance.now(), dur: 900 };
+}
+function applyVisibility() {
+  const s = STEPS[stepIndex];
+  for (const [name, mesh] of Object.entries(meshes)) {
+    let vis = s.show.includes(name) && !(s.hide || []).includes(name);
+    if ((!caseShown || s.hideCase) && CASE.includes(name)) vis = false;
+    if (explode > .02 && P[name].wire) vis = false;
+    mesh.visible = vis;
+  }
+}
+function placeAll(progress) {
+  const s = STEPS[stepIndex];
+  const enter = s.enter || {};
+  const names = Object.keys(enter);
+  for (const [name, mesh] of Object.entries(meshes)) {
+    const ex = P[name].ex || [0, 0, 0];
+    const pos = new THREE.Vector3(ex[0] * explode, ex[1] * explode, ex[2] * explode);
+    const mat = mesh.material;
+    const isNew = name in enter;
+    let opacity = (s.ghost || []).includes(name) ? .16 : mesh.userData.baseOpacity;
+    const sel = s.wires ? WIRE_INFO[wireIndex].k : null;
+    if (s.wires) opacity = name === sel ? 1 : P[name].wire ? .07 : .26;
+    if (isNew) {
+      const i = names.indexOf(name);
+      const t = Math.min(1, Math.max(0, (progress * (1 + names.length * .05) - i * .05)));
+      pos.add(new THREE.Vector3(...enter[name]).multiplyScalar(1 - ease(t)));
+      opacity *= Math.min(1, t * 2.5);
+    }
+    mesh.position.copy(pos);
+    const dim = (!isNew && names.length) ? .4 : 0;   // earlier steps' parts fade back a little
+    mat.color.copy(mesh.userData.base).lerp(grey, dim);
+    if (s.wires && name === sel) mat.emissive.copy(mesh.userData.base).multiplyScalar(.55);
+    else mat.emissive.set(P[name].e || 0);
+    mat.opacity = opacity;
+    mat.transparent = opacity < 1;
+    mat.depthWrite = opacity >= 1;
+    for (const c of mesh.children) if (c.material) c.material.opacity = opacity;
+  }
+}
+function addTag(parent, text, at) {
+  const el = document.createElement("div");
+  const tag = document.createElement("div");
+  tag.className = "tag";
+  tag.textContent = text;
+  el.appendChild(tag);
+  const obj = new CSS2DObject(el);
+  obj.position.copy(at);
+  parent.add(obj);
+  labelObjs.push(obj);
+}
+function setLabels() {
+  labelObjs.splice(0).forEach(o => o.parent.remove(o));
+  const s = STEPS[stepIndex];
+  if (s.wires) {
+    const w = WIRE_INFO[wireIndex], ends = bundle._wires?.[w.k], mesh = meshes[w.k];
+    if (ends && mesh && mesh.visible) { addTag(mesh, "From: " + w.from, new THREE.Vector3(...ends[0])); addTag(mesh, "To: " + w.to, new THREE.Vector3(...ends[1])); }
+    return;
+  }
+  if (!s.labels || explode > .02) return;
+  for (const [name, spec] of Object.entries(s.labels)) {
+    const mesh = meshes[name];
+    if (!mesh || !mesh.visible) continue;
+    const [text, at] = Array.isArray(spec) ? spec : [spec, null];
+    const el = document.createElement("div");
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.textContent = text;
+    el.appendChild(tag);
+    const obj = new CSS2DObject(el);
+    obj.position.copy(at ? new THREE.Vector3(...at) : mesh.userData.top);
+    mesh.add(obj);
+    labelObjs.push(obj);
+  }
+}
+const wireLen = w => w.lenText || (bundle._lengths?.[w.len] ? bundle._lengths[w.len] + " mm" : "");
+function wirePanel() {
+  const w = WIRE_INFO[wireIndex];
+  const dot = k => `<i style="background:${P[k] ? P[k].c : "#888"}"></i>`;
+  return `<div class="wirenav"><button class="btn" id="wprev" aria-label="Previous wire">◀ Wire</button>
+      <span>${wireIndex + 1} of ${WIRE_INFO.length}</span><button class="btn" id="wnext" aria-label="Next wire">Wire ▶</button></div>
+    <div class="wirecard"><h2>${dot(w.k)}${w.from} → ${w.to}</h2>
+      <dl><dt>Wire</dt><dd>${w.type}</dd><dt>Cut</dt><dd>${wireLen(w)}</dd></dl><p>${w.how}</p></div>
+    <ol class="wirelist">${WIRE_INFO.map((x, i) => `<li><button data-i="${i}" aria-current="${i === wireIndex}">${dot(x.k)}${x.from.replace(/ \(.*\)/, "")} → ${x.to.replace(/ \(.*\)/, "")}<span>${wireLen(x)}</span></button></li>`).join("")}</ol>`;
+}
+function pickWire(i) {
+  wireIndex = (i + WIRE_INFO.length) % WIRE_INFO.length;
+  render(); placeAll(1); setLabels(); frameWire();
+}
+function frameWire(instant) {
+  const mesh = meshes[WIRE_INFO[wireIndex].k];
+  if (!mesh) return;
+  placeAll(1);
+  root.updateMatrixWorld(true);
+  const sphere = new THREE.Box3().setFromObject(mesh).getBoundingSphere(new THREE.Sphere());
+  const v = THREE.MathUtils.degToRad(camera.fov) / 2, h = Math.atan(Math.tan(v) * camera.aspect);
+  const dist = Math.max(sphere.radius * 1.5, 30) / Math.sin(Math.min(v, h));
+  const pos = new THREE.Vector3(...VIEWS[STEPS[stepIndex].view]).normalize().multiplyScalar(dist).add(sphere.center);
+  if (instant || reduced) { camera.position.copy(pos); controls.target.copy(sphere.center); return; }
+  camAnim = { from: camera.position.clone(), fromT: controls.target.clone(), to: pos, toT: sphere.center.clone(), t0: performance.now(), dur: 700 };
+}
+function render() {
+  const s = STEPS[stepIndex];
+  document.getElementById("count").textContent = `Step ${stepIndex + 1} of ${STEPS.length}`;
+  document.getElementById("title").textContent = s.title;
+  document.getElementById("text").innerHTML = s.text + (s.wires ? wirePanel() : "");
+  if (s.wires) {
+    document.getElementById("wprev").addEventListener("click", () => pickWire(wireIndex - 1));
+    document.getElementById("wnext").addEventListener("click", () => pickWire(wireIndex + 1));
+    document.querySelectorAll(".wirelist button").forEach(b => b.addEventListener("click", () => pickWire(+b.dataset.i)));
+    const list = document.querySelector(".wirelist"), cur = list.querySelector("[aria-current=true]");
+    list.scrollTop = cur.offsetTop - list.offsetTop - list.clientHeight / 2 + cur.offsetHeight / 2;
+    document.getElementById("text").scrollTop = 0;
+  }
+  if (!s.wires) document.getElementById("text").scrollTop = 0;
+  document.getElementById("prev").disabled = stepIndex === 0;
+  document.getElementById("next").textContent = stepIndex === STEPS.length - 1 ? "Start again" : "Next step";
+  [...dots.children].forEach((b, i) => b.setAttribute("aria-current", i === stepIndex ? "step" : "false"));
+}
+function goTo(i, opts = {}) {
+  stepIndex = (i + STEPS.length) % STEPS.length;
+  const s = STEPS[stepIndex];
+  explode = s.explode ?? 0;
+  document.getElementById("ex").value = explode;
+  controls.autoRotate = !!s.spin && !reduced;
+  controls.autoRotateSpeed = 1.2;
+  applyVisibility();
+  render();
+  if (s.wires) frameWire(opts.instant); else setView(s.view, opts.instant);
+  anim = (reduced || opts.instant) ? null : { t0: performance.now(), dur: 1300 };
+  placeAll(anim ? 0 : 1);
+  setLabels();
+  try { history.replaceState(null, "", `#step${stepIndex + 1}`); } catch (e) {}
+}
+
+// ------------------------------------------------------------------ controls
+document.getElementById("next").addEventListener("click", () => goTo(stepIndex + 1));
+document.getElementById("prev").addEventListener("click", () => goTo(stepIndex - 1));
+document.getElementById("replay").addEventListener("click", () => goTo(stepIndex));
+for (const v of ["back", "front", "top"]) document.getElementById("v-" + v).addEventListener("click", () => { controls.autoRotate = false; setView(v); });
+document.getElementById("t-case").addEventListener("click", e => {
+  caseShown = !caseShown;
+  e.currentTarget.setAttribute("aria-pressed", String(caseShown));
+  e.currentTarget.textContent = caseShown ? "Case shown" : "Case hidden";
+  applyVisibility(); setLabels();
+});
+document.getElementById("ex").addEventListener("input", e => {
+  explode = +e.target.value; anim = null; applyVisibility(); placeAll(1); setLabels();
+});
+addEventListener("hashchange", () => {
+  const m = location.hash.match(/^#step(\d+)$/);
+  if (m && +m[1] - 1 !== stepIndex) goTo(+m[1] - 1);
+});
+addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") goTo(stepIndex + 1);
+  if (e.key === "ArrowLeft") goTo(stepIndex - 1);
+  if (STEPS[stepIndex].wires && (e.key === "ArrowDown" || e.key === "ArrowUp")) { e.preventDefault(); pickWire(wireIndex + (e.key === "ArrowDown" ? 1 : -1)); }
+});
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  labelRenderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+resize();
+
+function tick(now) {
+  if (anim) {
+    const t = Math.min(1, (now - anim.t0) / anim.dur);
+    placeAll(t);
+    if (t >= 1) { anim = null; placeAll(1); }
+  }
+  if (camAnim) {
+    const t = ease(Math.min(1, (now - camAnim.t0) / camAnim.dur));
+    camera.position.lerpVectors(camAnim.from, camAnim.to, t);
+    controls.target.lerpVectors(camAnim.fromT, camAnim.toT, t);
+    if (t >= 1) camAnim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+const m0 = location.hash.match(/^#step(\d+)$/);
+goTo(m0 ? Math.min(Math.max(+m0[1] - 1, 0), STEPS.length - 1) : 0, { instant: true });
+requestAnimationFrame(tick);
+window.__ready = true;
+</script>

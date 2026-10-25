@@ -29,6 +29,15 @@ static const char *TAG = "display";
 #define DEF_MY     false
 #define DEF_GAP_X  40
 #define DEF_GAP_Y  53
+#if LCD_TURNED   /* mounted the other way up: mirroring both axes turns the picture 180 deg */
+#define USE_MX     (!DEF_MX)
+#define USE_MY     (!DEF_MY)
+#define USE_GAP_Y  52                /* the 1.14 in glass's offset the other way up, as above */
+#else
+#define USE_MX     DEF_MX
+#define USE_MY     DEF_MY
+#define USE_GAP_Y  DEF_GAP_Y
+#endif
 
 #define BL_TIMER   LEDC_TIMER_1      /* timer 0 is the camera's clock */
 #define BL_CHANNEL LEDC_CHANNEL_1
@@ -96,7 +105,7 @@ esp_err_t display_init(void)
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_st7789(io, &dev, &s_panel), TAG, "panel");
     esp_lcd_panel_reset(s_panel);
     esp_lcd_panel_init(s_panel);
-    display_tune(DEF_SWAP, DEF_MX, DEF_MY, DEF_GAP_X, DEF_GAP_Y, true);
+    display_tune(DEF_SWAP, USE_MX, USE_MY, DEF_GAP_X, USE_GAP_Y, true);
     esp_lcd_panel_disp_on_off(s_panel, true);
     display_present();
     ESP_LOGI(TAG, "ST7789 %dx%d ready", LCD_W, LCD_H);

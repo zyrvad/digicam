@@ -5,7 +5,9 @@
  * Camera and microSD pins are fixed by the board. Taken from
  * Love Letter Box firmware/camera-test/main/pins.h (now on the
  * june-2026 branch of github.com/lovingdailyreminders/development).
- * Screen, buttons and battery sense follow ../02-build-plan.md (Pin plan).
+ * Screen, buttons and battery sense: the v4 case's pin plan (24 Oct), grouped so the wires are
+ * short: the screen at the USB end of the GND row, the back buttons under them on the 3V3 row.
+ * Wiring: ../diagrams/wiring-v4.png.
  */
 
 /* microSD: built-in slot, SDMMC 1-bit */
@@ -31,18 +33,23 @@
 #define PIN_CAM_PWDN      -1
 #define PIN_CAM_RESET     -1
 
-/* Screen: ST7789 over SPI2 (through the GPIO matrix). RES goes to the board's EN pin. */
+/* Screen: ST7789 over SPI2 (through the GPIO matrix). RES goes to the board's EN pin.
+ * CS and BL use GPIO 19/20, the native-USB pins: the OTG socket is unused (the TTL socket
+ * programs the board), and the secondary USB console is off (sdkconfig.defaults).
+ * BL is no longer on strapping pin 46: the module pulls BL high, which blocked flashing. */
 #define PIN_LCD_SCK   21
 #define PIN_LCD_MOSI  47
-#define PIN_LCD_CS    42
-#define PIN_LCD_DC    41
-#define PIN_LCD_BL    46    /* backlight, PWM */
+#define PIN_LCD_CS    19
+#define PIN_LCD_DC    45    /* strapping pin, but only read at reset; the screen doesn't pull it */
+#define PIN_LCD_BL    20    /* backlight, PWM */
+#define LCD_TURNED    1     /* the v4 body holds the screen turned round (its pins by the board's 3V3 end),
+                               so the picture is turned 180 deg in the panel: display.c mirrors both axes */
 
 /* Buttons: one leg to the pin, the other to GND (internal pull-ups) */
-#define PIN_BTN_LEFT     2
-#define PIN_BTN_OK      14
-#define PIN_BTN_RIGHT   45  /* strapping pin: low at boot is the safe level, so a button to GND is fine */
-#define PIN_BTN_SHUTTER 48  /* shared with the onboard RGB LED's data line */
+#define PIN_BTN_LEFT     3
+#define PIN_BTN_OK      46  /* strapping pin: a button to GND only pulls it low, the safe level */
+#define PIN_BTN_RIGHT   48  /* shared with the onboard RGB LED's data line: only pulled low when pressed */
+#define PIN_BTN_SHUTTER 14
 
 /* Battery: cell + -> 100k -> GPIO1 -> 100k -> GND (half the cell voltage) */
 #define PIN_BATT_SENSE   1

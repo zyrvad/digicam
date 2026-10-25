@@ -1,5 +1,7 @@
 # Assembly guide: v3 bodies (clear and retro)
 
+> **Superseded on 24 Oct by v4** (`13-assembly-guide-v4.md`). The real screen and board don't fit the v3 frame, and the firmware's pin plan has changed, so the wiring below no longer matches the firmware.
+
 **Interactive 3D version:** https://claude.ai/artifact/BogmuenUrWaN1Fk98t3Pgy (source `guide-v3/`; parts from `cad/guide_parts_v3.scad`, bundled by `cad/export_guide_v3.py`). Switch between the clear and retro bodies at its top left.
 
 23 Oct 2026. This guide covers both camera bodies in `cad/camera1_v3.scad`, from printed parts and loose electronics to a finished camera. Where the two bodies differ, each step says so. The pictures show each step with the new parts in orange, clear body on the left and retro on the right.
