@@ -192,16 +192,17 @@ Then run `python3 cad/export_v4.py` (parts and fit check) and `python3 cad/make_
 
 ![Plates](cad/renders/v4/plates.png)
 
+**The real camera is plates 1 to 4** (the newest version of every part, with your tuned filaments). Plates 5 to 10 are the test prints, kept for reference.
+
 | Plate | Parts | Filament | Time |
 | --- | --- | --- | --- |
-| 1 **Test first** | frame, back plate, front plate, wiring deck, power cradle, button carrier | PLA Wood brown (the deck, cradle and carrier are hidden, so brown is fine) | 1 h 50 min, 64 g |
-| 2 Coverings | front and back coverings, with the portrait inlay; the dark window card | PLA Wood + black | 1 h 5 min, 16 g |
-| 3 Silver | top cover, bottom plate, lens barrel, 3 button caps, shutter cap, knob, speed dial, shoe, advance lever | PLA Basic white (or silver) | 1 h 10 min, 36 g |
-| 4 **Reprint: frame, back plate, deck, carrier** | frame (deck bosses 1 mm higher), back plate, wiring deck, button carrier | PLA Wood brown | 1 h 27 min, 44 g |
-| 5 **Battery test** | power cradle (the new block), front plate | PLA Wood brown | 30 min, 22 g |
-| 6 **Button test** | back plate, button carrier (14 mm apart, bigger wire holes) | PLA Wood brown | 29 min, 15 g |
-| 7 **Overnight, silver** | bottom plate, lens barrel, 3 button caps and the shutter cap, speed dial, shoe, advance lever | PLA Basic white (or silver) | 41 min, 20 g |
-| 8 **Overnight, brown** | front covering (0.1 mm layers: the first print of the new grain) | PLA Wood brown | 24 min, 5 g |
+| **FINAL 1** | frame, back plate, front plate, wiring deck, power cradle, button carrier | PLA Wood - tuned | 1 h 58 min, 62 g |
+| **FINAL 2** | top cover, bottom plate, lens barrel, button caps and shutter cap, rewind knob, speed dial, shoe, advance lever (0.12 mm layers) | PLA Basic White - tuned | 1 h 43 min, 34 g |
+| **FINAL 3** | front covering (0.1 mm layers) | PLA Wood - tuned | 24 min, 5 g |
+| **FINAL 4** | back covering with the portrait inlay, dark window card (0.1 mm layers) | PLA Wood - tuned + black | 40 min, 12 g |
+| Test 5 to 10 | the first body test, the reprint, the battery test, the button test, the two overnight plates | | |
+
+The project carries your flow ratios (0.931 for both), a scarf seam on the outer walls, slower outer walls (150 mm/s) and the elephant-foot compensation (0.15 mm). The brown is set up on Bambu PLA Wood's own preset.
 
 **Test first:**
 1. Print plate 1 and build the inside: steps 1 to 11, with the desk test at the end of step 11.

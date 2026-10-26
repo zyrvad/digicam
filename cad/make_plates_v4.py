@@ -2,30 +2,21 @@
 
     python3 make_plates_v4.py      ->  export/v4/camera1_v4_plates.3mf
 
-Run export_v4.py first (it writes the parts). Plates, for the Bambu Lab P2S, 0.4 mm nozzle:
-    1  brown   TEST FIRST: the body and everything the electronics sit in: frame, back and front
-               plates, wiring deck, power cradle, button carrier. Print it, then build the inside
-               and test it (screen on its pins, board and USB-C, battery springs, buttons, charge
-               module) before printing the rest. The deck, cradle and carrier are hidden inside,
-               so brown is fine for them.
-    2  brown   front and back coverings, 0.1 mm layers for the grain (4 layers per groove); the portrait inlay is a
-               black part of the back covering, and the dark window card prints beside them in
-               black (AMS). Without an AMS, delete the inlay and paint-fill the sunk drawing.
-    3  light   top cover, bottom plate, lens barrel (with its mount ring, release and selector),
-               button caps and shutter, the knob, speed dial, shoe and advance lever
-    4  brown   REPRINT after the test prints: the frame (the deck's bosses 1 mm higher, the board's
-               USB-C holes with them), the back plate (screen pins 27.8 mm apart, glass on the
-               pocket's floor, window 1 mm toward the pins) and the deck (clear of the screen's back,
-               open wire lanes for 26 AWG, wire tray). The four-leg button carrier is unchanged.
-    6  brown   BUTTON TEST: the back plate and the button carrier, 14 mm between the buttons and
-               bigger wire holes (26 AWG). The same two parts are on plate 4.
-    7  light   OVERNIGHT (low risk, nothing still being tested touches them): the bottom plate, the
-               lens barrel, the button caps and shutter cap, the speed dial, shoe and advance lever
-    8  brown   OVERNIGHT: the front covering (0.1 mm layers; the first print of the new grain). The back
-               covering waits for the portrait's edits.
-    5  brown   BATTERY TEST: the power cradle (it lies on the battery and holds the charge module and
-               the two resistors) and the front plate that clamps it, to try the battery side in the
-               first frame (the battery side of the frame hasn't changed).
+Run export_v4.py first (it writes the parts). For the Bambu Lab P2S, 0.4 mm nozzle.
+
+THE REAL CAMERA, plates 1 to 4 (the newest version of every part):
+    1  brown   frame, back plate, front plate, wiring deck, power cradle, button carrier (the deck,
+               cradle and carrier are hidden inside, so they print in the body's brown)
+    2  white   top cover, bottom plate, lens barrel, button caps and shutter cap, rewind knob, speed
+               dial, shoe, advance lever; 0.12 mm layers for a finer finish on their curves
+    3  brown   the front covering (0.1 mm layers for the grain)
+    4  brown   the back covering with the portrait inlay (black part, AMS) and the dark window card
+               (black), 0.1 mm layers. Print it once the portrait is final.
+THE TEST PRINTS, plates 5 to 10, kept for reference: the first body test, the reprint, the battery
+test, the button test, and the two overnight plates.
+The filaments carry the tuned flow ratios (0.931 for both, from the flow rate test); the white is
+Bambu PLA Basic, the brown Bambu PLA Wood. Every plate has a scarf seam on the outer walls and
+slower outer walls (150 mm/s).
 Filaments: 1 black, 2 white, 3 brown (your PLA Matte black, PLA Basic white, PLA Wood).
 The print settings come from Bambu Studio's own system presets, flattened, with 3 walls.
 """
@@ -48,24 +39,34 @@ SCAD = os.path.join(HERE, "camera1_v4.scad")
 BAMBU = "/Applications/BambuStudio.app/Contents/MacOS/BambuStudio"
 SYS = os.path.expanduser("~/Library/Application Support/BambuStudio/system/BBL")
 PRINTER, PROCESS = "Bambu Lab P2S 0.4 nozzle", "0.20mm Standard @BBL P2S"
-FILAMENTS = [("Bambu PLA Matte @BBL P2S", "#000000"), ("Bambu PLA Basic @BBL P2S", "#FFFFFF"), ("Bambu PLA Wood @BBL P2S", "#3F231C")]
+# (system preset, colour, your tuned values on top of it): the flow ratios from the flow rate test (27 Oct)
+TUNED_WHITE = {"name": "PLA Basic White - tuned", "filament_settings_id": ["PLA Basic White - tuned"], "filament_flow_ratio": ["0.931", "0.98"]}
+TUNED_WOOD = {"name": "PLA Wood - tuned", "filament_settings_id": ["PLA Wood - tuned"], "filament_flow_ratio": ["0.931", "0.98"]}
+FILAMENTS = [("Bambu PLA Matte @BBL P2S", "#000000", {}), ("Bambu PLA Basic @BBL P2S", "#FFFFFF", TUNED_WHITE),
+             ("Bambu PLA Wood @BBL P2S", "#3F231C", TUNED_WOOD)]
 BED, MARGIN, GAP = 256.0, 12.0, 7.0
 STRIDE = BED * 1.2            # Bambu lays plates out 1/5 of a bed apart, in rows of ceil(sqrt(n))
 
 # plate: (name, [(part file, filament, object settings)]); a part may carry extra volumes
 GRAIN = {"layer_height": "0.1"}
+FINE = {"layer_height": "0.12"}   # the silver parts: their curves and rounded corners show the layers at 0.2
 PLATES = [
-    ("Test first: body and inside", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("front_plate.stl", 3, {}),
-                                     ("deck.stl", 3, {}), ("cradle.stl", 3, {}), ("carrier.stl", 3, {})]),
-    ("Brown coverings", [("leatherette.3mf", 3, GRAIN), ("back_leatherette.3mf", 3, GRAIN), ("window_card.stl", 1, GRAIN)]),
-    ("Light (silver or white)", [("top_plate.stl", 2, {}), ("bottom_plate.stl", 2, {}), ("lens_barrel.stl", 2, {}),
-                                 ("caps_light.stl", 2, {}), ("top_bits.stl", 2, {}), ("knob_cap.stl", 2, {})]),
-    ("Reprint: frame, back plate, deck, carrier (26 Oct)", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("deck.stl", 3, {}), ("carrier.stl", 3, {})]),
-    ("Battery test: power cradle, front plate", [("cradle.stl", 3, {}), ("front_plate.stl", 3, {})]),
-    ("Button test: back plate, carrier", [("back_plate.stl", 3, {}), ("carrier.stl", 3, {})]),
-    ("Overnight, silver: bottom plate, lens, caps, dial, shoe, lever", [("bottom_plate.stl", 2, {}), ("lens_barrel.stl", 2, {}),
-                                                                       ("caps_light.stl", 2, {}), ("top_bits.stl", 2, {})]),
-    ("Overnight, brown: front covering", [("leatherette.3mf", 3, GRAIN)]),
+    # ---- the real camera: the newest version of every part, with the tuned filaments
+    ("FINAL 1: brown body and inside", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("front_plate.stl", 3, {}),
+                                        ("deck.stl", 3, {}), ("cradle.stl", 3, {}), ("carrier.stl", 3, {})]),
+    ("FINAL 2: silver", [("top_plate.stl", 2, FINE), ("bottom_plate.stl", 2, FINE), ("lens_barrel.stl", 2, FINE),
+                         ("caps_light.stl", 2, FINE), ("top_bits.stl", 2, FINE), ("knob_cap.stl", 2, FINE)]),
+    ("FINAL 3: front covering", [("leatherette.3mf", 3, GRAIN)]),
+    ("FINAL 4: back covering with the portrait, window card", [("back_leatherette.3mf", 3, GRAIN), ("window_card.stl", 1, GRAIN)]),
+    # ---- the test prints, kept as they were (the same parts, now at their newest version)
+    ("Test: body and inside (first test)", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("front_plate.stl", 3, {}),
+                                            ("deck.stl", 3, {}), ("cradle.stl", 3, {}), ("carrier.stl", 3, {})]),
+    ("Test: reprint frame, back plate, deck, carrier", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("deck.stl", 3, {}), ("carrier.stl", 3, {})]),
+    ("Test: battery (power cradle, front plate)", [("cradle.stl", 3, {}), ("front_plate.stl", 3, {})]),
+    ("Test: buttons (back plate, carrier)", [("back_plate.stl", 3, {}), ("carrier.stl", 3, {})]),
+    ("Test: overnight silver (bottom plate, lens, caps, dial, shoe, lever)", [("bottom_plate.stl", 2, {}), ("lens_barrel.stl", 2, {}),
+                                                                             ("caps_light.stl", 2, {}), ("top_bits.stl", 2, {})]),
+    ("Test: overnight front covering", [("leatherette.3mf", 3, GRAIN)]),
 ]
 EXTRA_VOLUMES = {"back_leatherette.3mf": [("portrait_inlay.3mf", 1, "portrait inlay")]}
 
@@ -131,9 +132,10 @@ def settings():
 
     with tempfile.TemporaryDirectory() as tmp:
         files = []
-        for kind, name in [("machine", PRINTER), ("process", PROCESS)] + [("filament", f) for f, _ in FILAMENTS]:
+        for kind, name, over in [("machine", PRINTER, {}), ("process", PROCESS, {})] + [("filament", f, o) for f, _, o in FILAMENTS]:
             d = flat(kind, name)
             d["from"] = "system"
+            d.update(over)
             files.append(os.path.join(tmp, f"{len(files)}.json"))
             json.dump(d, open(files[-1], "w"))
         cube = os.path.join(tmp, "c.stl")
@@ -143,7 +145,7 @@ def settings():
         z = zipfile.ZipFile(os.path.join(tmp, "s.3mf"))
         project = json.loads(z.read("Metadata/project_settings.config"))
         static = {n: z.read(n) for n in ["[Content_Types].xml", "_rels/.rels"]}
-    project["filament_colour"] = [c for _, c in FILAMENTS]
+    project["filament_colour"] = [c for _, c, _ in FILAMENTS]
     # the CLI leaves the per-filament lists and the flush table at their one/four-filament defaults
     n = len(FILAMENTS)
     for k, v in list(project.items()):
@@ -153,6 +155,9 @@ def settings():
     project["flush_volumes_matrix"] = [str(x) for x in [0, 700, 250, 120, 0, 150, 140, 600, 0]]
     project["flush_volumes_vector"] = ["140"] * (2 * n)
     project["wall_loops"] = "3"
+    # for the finish: a scarf seam on the outer walls (no seam bump), and slower outer walls
+    project["seam_slope_type"] = "external"
+    project["outer_wall_speed"] = ["150"] + list(project["outer_wall_speed"][1:])
     # the prime tower (only the coverings plate needs one): in the open space at the back right,
     # well inside the bed (the default sits so far back that a tall tower runs off it)
     project["wipe_tower_x"] = ["165"] * len(PLATES)
