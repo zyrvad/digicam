@@ -40,8 +40,10 @@ BAMBU = "/Applications/BambuStudio.app/Contents/MacOS/BambuStudio"
 SYS = os.path.expanduser("~/Library/Application Support/BambuStudio/system/BBL")
 PRINTER, PROCESS = "Bambu Lab P2S 0.4 nozzle", "0.20mm Standard @BBL P2S"
 # (system preset, colour, your tuned values on top of it): the flow ratios from the flow rate test (27 Oct)
-TUNED_WHITE = {"name": "PLA Basic White - tuned", "filament_settings_id": ["PLA Basic White - tuned"], "filament_flow_ratio": ["0.931", "0.98"]}
-TUNED_WOOD = {"name": "PLA Wood - tuned", "filament_settings_id": ["PLA Wood - tuned"], "filament_flow_ratio": ["0.931", "0.98"]}
+# They keep Bambu's own preset names, with the changes marked as edits to them (as Bambu Studio saves a
+# project with an edited preset): a custom name with no base recorded stops Bambu Studio opening the file.
+TUNED_WHITE = {"filament_flow_ratio": ["0.931", "0.98"]}
+TUNED_WOOD = {"filament_flow_ratio": ["0.931", "0.98"]}
 FILAMENTS = [("Bambu PLA Matte @BBL P2S", "#000000", {}), ("Bambu PLA Basic @BBL P2S", "#FFFFFF", TUNED_WHITE),
              ("Bambu PLA Wood @BBL P2S", "#3F231C", TUNED_WOOD)]
 BED, MARGIN, GAP = 256.0, 12.0, 7.0
@@ -158,6 +160,9 @@ def settings():
     # for the finish: a scarf seam on the outer walls (no seam bump), and slower outer walls
     project["seam_slope_type"] = "external"
     project["outer_wall_speed"] = ["150"] + list(project["outer_wall_speed"][1:])
+    # mark them as edits of the system presets: [process, each filament, printer]
+    project["different_settings_to_system"] = (["outer_wall_speed;seam_slope_type;wall_loops"] +
+                                               [";".join(sorted(o)) for _, _, o in FILAMENTS] + [""])
     # the prime tower (only the coverings plate needs one): in the open space at the back right,
     # well inside the bed (the default sits so far back that a tall tower runs off it)
     project["wipe_tower_x"] = ["165"] * len(PLATES)
