@@ -52,10 +52,14 @@ STRIDE = BED * 1.2            # Bambu lays plates out 1/5 of a bed apart, in row
 # plate: (name, [(part file, filament, object settings)]); a part may carry extra volumes
 GRAIN = {"layer_height": "0.1"}
 FINE = {"layer_height": "0.12"}   # the silver parts: their curves and rounded corners show the layers at 0.2
+# The brown body: the scarf seam is for long outer walls and misbehaves on the frame's small loops;
+# the back and front plates (2-2.4 mm) print solid, or the sparse infill shows through their tops.
+BODY = {"seam_slope_type": "none"}
+PLATE = {"seam_slope_type": "none", "top_shell_layers": "8", "bottom_shell_layers": "4"}
 PLATES = [
     # ---- the real camera: the newest version of every part, with the tuned filaments
-    ("FINAL 1: brown body and inside", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("front_plate.stl", 3, {}),
-                                        ("deck.stl", 3, {}), ("cradle.stl", 3, {}), ("carrier.stl", 3, {})]),
+    ("FINAL 1: brown body and inside", [("frame.3mf", 3, BODY), ("back_plate.stl", 3, PLATE), ("front_plate.stl", 3, PLATE),
+                                        ("deck.stl", 3, BODY), ("cradle.stl", 3, BODY), ("carrier.stl", 3, BODY)]),
     ("FINAL 2: silver", [("top_plate.stl", 2, FINE), ("bottom_plate.stl", 2, FINE), ("lens_barrel.stl", 2, FINE),
                          ("caps_light.stl", 2, FINE), ("top_bits.stl", 2, FINE), ("knob_cap.stl", 2, FINE)]),
     ("FINAL 3: front covering", [("leatherette.3mf", 3, GRAIN)]),

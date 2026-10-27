@@ -13,6 +13,12 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 
 ## The outside: Leica M6 style and proportions, in brown (25 Oct)
 
+**27 Oct, wood PLA fixes** (plate 1 of the Bambu project):
+- **The frame's middle divider** is now 1.6 mm thick (was a thin free wall that lifted and wobbled). It has a 2 mm foot and three small gussets on the board side, all below the deck.
+- **The battery spring tabs** are 1.3 mm thick, three lines of the 0.4 nozzle. They push about 2 N each.
+- **The back and front plates print solid** (8 top and 4 bottom layers). That way the sparse infill can't show through as ridges on the top surface.
+- **No scarf seam on the body plate.** The scarf seam is for long outer walls and smears on the frame's small loops.
+
 ![Before and after](cad/renders/v4/before_after_m6.png)
 
 **26 Oct, overnight prints:** the parts nothing still under test depends on.
@@ -137,7 +143,7 @@ So 9 loose prints became 1. Still separate, because they can't be printed in pla
 
 **The battery** (the 2000 mAh 103450 cell, measured 10 × 34 × 50 mm on 10 Oct):
 - It rests on 1 mm foam tape, against the divider and the bottom wall.
-- Three spring tabs push it there: two from the left, one from above. They're thin cantilevers with a round nub, about 1 N each.
+- Three spring tabs push it there: two from the left, one from above. They're 1.3 mm cantilevers with a round nub, about 2 N each.
 - It can't rattle, a cell up to about 0.8 mm bigger still fits, and nothing presses hard on the pouch.
 - The cradle above it and the front plate stop it moving forward.
 

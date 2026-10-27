@@ -178,6 +178,7 @@ bat_xy = [post_in + post_r + 0.4, wall + 0.1];
 div_x = bat_xy[0] + bat[0] + 0.1;       // spring tabs push the battery against the divider
 spring_preload = 0.4;                   // how far the spring tabs reach into the battery's space (0 for the fit check)
 z_div1 = z_cr0;                         // the divider stops at the battery's front: wires pass over it
+div_t = 1.6;                            // the divider's thickness (toward the board side)
 
 // board: USB end against the right wall, centred in height (so the lens is too)
 board_xy = [W - port_t - clr - usb_over - board[0], H / 2 - board[1] / 2];
@@ -292,7 +293,14 @@ module frame() {
             // the corner posts, filled out to the corner so each is joined to both walls
             for (p = posts) hull() { zcyl(p, 2 * post_r, z_bi, z_fi); zbox(p[0] < W / 2 ? wall - 0.5 : p[0], p[1] < H / 2 ? wall - 0.5 : p[1], p[0] < W / 2 ? p[0] - wall + 0.5 : W - wall + 0.5 - p[0], p[1] < H / 2 ? p[1] - wall + 0.5 : H - wall + 0.5 - p[1], z_bi, z_fi); }
             // battery bay: divider (only as high as the battery), a stop above it with a gap for the leads, fingers
-            zbox(div_x, wall - 0.5, 1.2, bat_xy[1] + bat[1] - wall + 0.5, z_bi, z_div1);
+            // (1.6 thick, with a foot and three gussets on its board side: a thin free wall, it lifted
+            // and wobbled in wood PLA)
+            zbox(div_x, wall - 0.5, div_t, bat_xy[1] + bat[1] - wall + 0.5, z_bi, z_div1);
+            zbox(div_x, wall - 0.5, div_t + 2.0, bat_xy[1] + bat[1] - wall + 0.5, z_bi, z_bi + 0.6);
+            for (y = [12, 27, 42]) hull() {
+                zbox(div_x + div_t - 0.01, y, 0.01, 1.2, z_bi, z_bi + 4.0);
+                zbox(div_x + div_t + 2.5, y, 0.01, 1.2, z_bi, z_bi + 0.6);
+            }
             battery_springs();
             for (s = [-1, 1]) strap_boss(s);
             // deck: two bottom bosses, and two under the board's holes (the board's screws go through the deck into them)
@@ -340,19 +348,20 @@ module cap_cut() {
     }
 }
 // battery: it rests on the bottom wall and against the divider; spring tabs (thin cantilevers with
-// a round nub) push it there from the left and from above, about 1 N each. It can't rattle, a
+// a round nub) push it there from the left and from above, about 2 N each. It can't rattle, a
 // slightly bigger cell still fits, and nothing presses hard on the pouch. A gap above the right
 // half of its top lets the leads out.
+leaf_t = 1.3;               // three lines of a 0.4 nozzle (0.9 was too thin to print cleanly in wood PLA)
 module spring_x(y0) {   // pushes +x, from the left wall
     x1 = bat_xy[0] - 0.8;
     zbox(wall - 0.5, y0, x1 - wall + 0.5, 3, z_bi, z_bi + 6.6);                    // anchor
-    zbox(x1 - 0.9, y0 + 2.99, 0.9, 10.5, z_bi, z_bi + 6.6);                         // the leaf
+    zbox(x1 - leaf_t, y0 + 2.99, leaf_t, 10.5, z_bi, z_bi + 6.6);                   // the leaf
     hull() { zbox(x1 - 0.01, y0 + 10.6, 0.01, 2.8, z_bi, z_bi + 6.6); zcyl([bat_xy[0] + spring_preload - 0.8, y0 + 12.0], 1.6, z_bi, z_bi + 6.6); }
 }
 module spring_y(x0) {   // pushes -y, from the top wall
     y1 = bat_xy[1] + bat[1] + 0.6;
     zbox(x0, y1, 3, H - wall - y1 + 0.5, z_bi, z_bi + 6.0);
-    zbox(x0 + 2.99, y1, 10.5, 0.9, z_bi, z_bi + 6.0);
+    zbox(x0 + 2.99, y1, 10.5, leaf_t, z_bi, z_bi + 6.0);
     hull() { zbox(x0 + 10.6, y1, 2.8, 0.01, z_bi, z_bi + 6.0); zcyl([x0 + 12.0, bat_xy[1] + bat[1] - spring_preload + 0.8], 1.6, z_bi, z_bi + 6.0); }
 }
 module battery_springs() {
