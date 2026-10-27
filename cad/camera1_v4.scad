@@ -38,7 +38,7 @@
 // wires were cut (the firmware turns the picture round); its glass sinks 1.2 mm into the back plate
 // and a gentle bevel runs from the glass up through the plate and the leather's smooth frame. The
 // silver front gets more of the M6's detail: raised rims round the windows, a round badge where
-// the red dot is, the rewind lever with its R, a small "No. 01" under the viewfinder. The lens and
+// the red dot is, the rewind lever; no lettering on the top plate. The lens and
 // the bottom read "digicam" and "ryan lim". Both of the board's USB-C sockets have an opening.
 // 25 Oct, after the test print: the screen's glass now rests on its pocket's floor (the rings round
 // the locating pins held the screen up, so the glass hung above its pocket and the parts on the
@@ -421,6 +421,14 @@ module usb_port(c, side, ys, zs) {
 }
 bottom_line = "digicam  ·  ryan lim";
 text_font = "Futura:style=Medium";
+// Lettering that has to read: Futura Bold, whose strokes are 0.27 of the size, so at 1.6 and up
+// they're at least a 0.4 nozzle's line wide (Medium's 0.16 printed as fuzz on the lens and badge)
+bold_font = "Futura:style=Bold";
+eng_d = 0.6;                // engraving depth: deep enough to paint-fill and wipe
+fut_adv = [["A", 1.114], ["C", 0.926], ["D", 1.092], ["G", 1.222], ["I", 0.492], ["L", 0.739], ["M", 1.438],
+           ["N", 1.265], ["R", 0.985], ["Y", 1.004], [" ", 0.472]];   // Futura Bold advances at size 1
+function adv(c) = let(i = search([c], fut_adv)[0]) is_num(i) ? fut_adv[i][1] : 1.0;
+function adv_to(t, i) = i == 0 ? 0 : adv_to(t, i - 1) + adv(t[i - 1]);
 
 // ================================================================ wiring deck (printed base down)
 // Sits on the screen's back (0.5 mm foam pad between), on two frame bosses at its bottom tabs and
@@ -696,7 +704,8 @@ module knob_cap_part() {   // standing on its top face
 // plate. Its base flange is the mount ring, with two lobes carrying the lens release button and
 // the frame selector lever (on the right of the lens seen from the front, as on the M6). A front
 // ring carries its lettering, as on a real lens (paint-fill it white).
-lens_words = ["digicam", "ryan lim"];   // round the front ring: one over the top, one along the bottom
+lens_words = ["DIGICAM", "RYAN LIM"];   // round the front ring: one over the top, one along the bottom
+// (capitals, as on a Leica lens: lower case at this size printed as specks, the i's dots apart)
 barrel_h = 10;
 flange_d = 48;
 rel_l = [-22.0, -13.5];     // lens release and frame selector, in the barrel's own coords (mirrored onto the camera):
@@ -723,20 +732,20 @@ module lens_barrel() {
         translate([0, 0, -0.01]) cylinder(r1 = cone_r, r2 = cone_r + barrel_h * 1.109, h = barrel_h + 0.02);
         for (a = [90, 210, 330]) translate([barrel_screw_r * cos(a), barrel_screw_r * sin(a), -1]) cylinder(d = insert_d, h = insert_len + 1);
         for (a = [45 : 90 : 315]) translate([23 * cos(a), 23 * sin(a), 0.8]) cylinder(d = 1.0, h = 1, $fn = 12);   // the mount's screws
-        translate([-0.4, barrel_d / 2 - 2.6, barrel_h - 0.4]) cube([0.8, 1.4, 1]);     // index mark
-        ring_arc(lens_words[0], 18.4, 2.2, barrel_h - 0.4, 90);
-        ring_arc(lens_words[1], 18.4, 2.2, barrel_h - 0.4, 270);
+        translate([-0.4, -21.0, barrel_h - eng_d]) cube([0.8, 1.0, 1]);    // index mark, under the gap in RYAN LIM
+        ring_arc(lens_words[0], 18.0, 2.7, barrel_h - eng_d, 90);
+        ring_arc(lens_words[1], 18.0, 2.7, barrel_h - eng_d, 270);
     }
 }
 // a word along an arc of radius r, centred at angle a, upright from +z (at the bottom it reads
-// left to right too, as on a lens's front ring)
-module ring_arc(t, r, size, z, a, pitch = 1.9) {
+// left to right too, as on a lens's front ring); each letter takes its own width
+module ring_arc(t, r, size, z, a, spacing = 1.12) {
     n = len(t);
-    step = pitch / r * 180 / PI;
+    k = size * spacing / r * 180 / PI;   // degrees per unit of advance
     top = sin(a) > 0;
-    for (i = [0 : n - 1]) let(ai = top ? a + ((n - 1) / 2 - i) * step : a + (i - (n - 1) / 2) * step)
-        rotate(ai) translate([r, 0, z]) rotate(top ? -90 : 90)
-            linear_extrude(1) text(t[i], size = size, font = text_font, halign = "center", valign = "center");
+    for (i = [0 : n - 1]) if (t[i] != " ") let(off = (adv_to(t, i) + adv(t[i]) / 2 - adv_to(t, n) / 2) * k)
+        rotate(top ? a - off : a + off) translate([r, 0, z]) rotate(top ? -90 : 90)
+            linear_extrude(1) text(t[i], size = size, font = bold_font, halign = "center", valign = "center");
 }
 module ring_text(t, r, size, z) {   // letters round a circle, reading clockwise from the top, seen from +z
     n = len(t);
@@ -825,15 +834,22 @@ module grain_relief() {
 }
 
 // ================================================================ top plate (printed upside down)
-// windows: the viewfinder and the rangefinder open through the front wall, with one dark card glued
-// behind both; the eyepiece at the back and the frame counter on top are shallow recesses (a black
-// marker); the M6's frosted frame-line window is ribbed, in the plate itself
+// windows: the viewfinder and the rangefinder are pockets in the front, each with a dark "glass" (black
+// PLA, 0.6 thick) pressed in; the eyepiece at the back and the frame counter on top are shallow
+// recesses (a black marker); the M6's frosted frame-line window is ribbed, in the plate itself
 // (mirrored for the left hand: the viewfinder and eyepiece by the knob on the right, the rangefinder
 // window by the shutter on the left, seen from the back)
-tp_wins = [[W - 31, 2.6, 15, 5.4, "front"], [29, 3.2, 7, 4.2, "front"], [W - 27, 2.6, 11, 5.4, "back"]];
-frost_win = [W - 41, 2.6, 8, 5.4];
+// The front row is centred on the silver band, as the M6's is, so it reaches below the top plate's
+// edge into the cover's skin: there the pocket goes through the skin and the glass rests on the
+// frame and front plate, which the skin covers (both are cut back to z = D); higher up it rests on
+// the top plate's front wall. Big, like the M6's, down to the lens's flange.
+tp_wins = [[W - 29, -5.5, 19, 9.0, "front"], [W - 103, -4.5, 8, 7.0, "front"], [W - 27, 2.6, 11, 5.4, "back"]];
+frost_win = [W - 42.5, -5.5, 11.5, 9.0];
+win_line = H - 1.0;         // the front windows' centre line
+glass_t = 0.6;
 counter_c = [10, 17.0];          // the frame counter's window, on top (x, z)
-module window_card() zbox(27.5, H + 1.9, W - 27.5 - 14.5, tp_h - tp_ceiling - 1.9, D + bump - 2.0 - 0.8, D + bump - 2.0);
+// the window glasses (the part keeps the card's old name)
+module window_card() for (w = tp_wins) if (w[4] == "front") zbox(w[0], H + w[1], w[2], w[3], D, D + glass_t);
 tp_r = 8;                   // round corners, seen from the front
 tp_chamfer = 2 * edge_r * (1 - cos(45));
 function td_arc(cx, cy, r, s) = [for (a = [0 : 7.5 : 45]) [cx + s * r * cos(a), cy + r * sin(a)]];
@@ -852,21 +868,13 @@ module top_plate_foot() {
         translate([tp_r * (1 - 0.414), -1]) square([W - 2 * tp_r * (1 - 0.414), D + bump + 2]);
     }
 }
-// the name, engraved like the M6's LEICA / M6: Futura (as close as it gets), two lines. The M6 has it
-// right-aligned beside the rangefinder window; mirrored, it's left-aligned beside it, at the right end
-name_lines = ["RYAN", "LIM"];
-name_font = "Futura:style=Medium";
-name_x = W - 26;            // its left edge, from the left end seen from the front
-module name_engraving() {
-    for (i = [0, 1]) translate([name_x, H + 5.4 - i * 4.6]) scale([1.15, 1])
-        text(name_lines[i], size = 3.2, font = name_font, halign = "left", valign = "center", spacing = 1.22);
-}
-// The M6's front is busy; these fill ours the same way. Raised rims (0.4) round the three front
-// windows, like the M6's chrome bezels; a round badge where the M6 has its red dot, "digicam" standing
-// in a shallow recess (paint the recess red); the rewind lever with its slotted pivot and an R, at
-// the leather line under the name; and a small "No. 01" under the viewfinder, where the M6 has 0.58.
-badge = [62, H + 3.0];      // seen from the front (x from the left end)
-r_lever = [107, cap_y0 + 4.2];
+// The M6's front is busy; these fill ours the same way, with no lettering (the name is on the lens).
+// Raised rims (0.4) round the three front windows, like the M6's chrome bezels; a round recess where
+// the M6 has its red dot (paint it red); and the rewind lever with its slotted pivot, at the leather
+// line by the rangefinder window.
+badge = [67, win_line + 0.5];   // seen from the front (x from the left end): clear of the lens's flange
+badge_d = 11;
+r_lever = [112, cap_y0 + 6.0];
 module front_details() {
     rim = 0.9;
     for (w = concat([for (w = tp_wins) if (w[4] == "front") w], [concat(frost_win, ["front"])]))
@@ -875,17 +883,13 @@ module front_details() {
             translate([w[0], H + w[1]]) square([w[2], w[3]]);
         }
     real() translate([r_lever[0], r_lever[1], D + bump - 0.5]) {   // the rewind lever
-        cylinder(d = 4.6, h = 1.3);
-        hull() { cylinder(d = 2.8, h = 1.0); translate([5.2, -2.4, 0]) cylinder(d = 2.2, h = 1.0); }
+        cylinder(d = 5.6, h = 1.4);
+        hull() { cylinder(d = 3.2, h = 1.1); translate([6.6, -3.0, 0]) cylinder(d = 2.6, h = 1.1); }
     }
 }
 module front_engraving() {
-    real() translate([0, 0, D + bump - 0.5]) linear_extrude(2) {
-        translate(badge) difference() { circle(d = 7.4); text("digicam", size = 1.35, font = "Futura:style=Bold", halign = "center", valign = "center"); }
-        translate(r_lever + [9.0, 0]) text("R", size = 2.4, font = text_font, halign = "center", valign = "center");
-        let(vf = tp_wins[0]) translate([W - vf[0], H + vf[1] - 1.4]) text("No. 01", size = 1.3, font = text_font, halign = "right", valign = "center");
-    }
-    real() translate([r_lever[0], r_lever[1], D + bump + 0.6]) rotate(40) cube([3.6, 0.5, 1], center = true);   // the pivot's slot
+    real() translate([badge[0], badge[1], D + bump - 0.5]) cylinder(d = badge_d, h = 2);
+    real() translate([r_lever[0], r_lever[1], D + bump + 0.7]) rotate(40) cube([4.4, 0.6, 1], center = true);   // the pivot's slot
 }
 module cap_band() {   // the cover down the front and the ends, round the frame
     difference() {
@@ -962,17 +966,15 @@ module top_plate() {
             translate([x, y1 + 0.01, z_mid]) rotate([90, 0, 0]) cylinder(d1 = 4.4, d2 = 2.4, h = 1.0);
         }
         win_depth = 0.6;
-        for (w = tp_wins) if (w[4] == "front") zbox(w[0], y0 + w[1], w[2], w[3], D + bump - 3, D + bump + 2);   // through: the card behind
+        for (w = tp_wins) if (w[4] == "front") zbox(w[0] - 0.1, y0 + w[1] - 0.1, w[2] + 0.2, w[3] + 0.2, D - 0.01, D + bump + 2);   // the glasses' pockets
                           else zbox(w[0], y0 + w[1], w[2], w[3], -2, win_depth);
         difference() {   // frosted window: ribs standing in a recess
             zbox(frost_win[0], y0 + frost_win[1], frost_win[2], frost_win[3], D + bump - win_depth, D + bump + 2);
-            for (x = [frost_win[0] + 0.8 : 1.0 : frost_win[0] + frost_win[2] - 0.6]) zbox(x, y0, 0.5, tp_h, D + bump - win_depth - 1, D + bump - 0.1);
+            for (x = [frost_win[0] + 0.8 : 1.0 : frost_win[0] + frost_win[2] - 0.6]) zbox(x, y0 + frost_win[1] - 1, 0.5, frost_win[3] + 2, D + bump - win_depth - 1, D + bump - 0.1);
         }
         translate([counter_c[0], y1 - win_depth, counter_c[1]]) rotate([-90, 0, 0]) cylinder(d = 5.0, h = 2);
         translate([W / 2 - 2, y1 + 1, z_mid]) rotate([90, 0, 0]) cylinder(d = 3.0, h = tp_ceiling + 2);      // shoe peg
         translate([dial_x, y1 + 1, z_mid]) rotate([90, 0, 0]) cylinder(d = 3.0, h = tp_ceiling + 2);  // dial peg
-        // the name, engraved in the front face left of the windows (reads right way round from the front)
-        real() translate([0, 0, D + bump - 0.4]) linear_extrude(1) name_engraving();
         front_engraving();
     }
 }
@@ -1009,7 +1011,7 @@ module bottom_plate() {
             square([6.4, 1.4], center = true);
         }
         translate([40, -bp_h + 0.4, z_mid]) rotate([90, 0, 0]) mirror([1, 0, 0])
-            linear_extrude(1) text(bottom_line, size = 3.2, font = text_font, halign = "center", valign = "center", spacing = 1.12);
+            linear_extrude(1) text(bottom_line, size = 3.0, font = bold_font, halign = "center", valign = "center", spacing = 1.12);
     }
 }
 module knob_slot(y0, h) {
@@ -1018,13 +1020,13 @@ module knob_slot(y0, h) {
 }
 dial_x = shutter_x + 17.5;
 dial_d = 15;
-dial_marks = ["B", "1", "2", "4", "8", "15", "30", "60", "125", "250", "500", "1000"];
+dial_marks = ["B", "4", "15", "60", "250", "1000"];   // every other speed: twelve at a readable size don't fit
 module dial() {   // the speed dial: knurled, numbers engraved round its top
     cylinder(d = 2.8, h = 2.0);
     translate([0, 0, 2.0]) difference() {
         union() { knurl(dial_d, 3.0, 48); translate([0, 0, 3.0]) cylinder(d = dial_d - 1.6, h = 0.8); }
         mirror([1, 0, 0]) for (i = [0 : len(dial_marks) - 1]) rotate(90 - i * 360 / len(dial_marks)) {   // reads right way round in the real camera
-            translate([4.5, 0, 3.4]) linear_extrude(1) text(dial_marks[i], size = 1.2, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
+            translate([4.3, 0, 3.4]) linear_extrude(1) text(dial_marks[i], size = 1.7, font = bold_font, halign = "center", valign = "center");
         }
         translate([0, 0, 3.4]) cylinder(d = 2.4, h = 1);
     }
@@ -1180,7 +1182,7 @@ else if (part == "lens_barrel") lens_barrel();
 else if (part == "leatherette") real() leatherette();
 else if (part == "back_leatherette") back_leatherette();
 else if (part == "portrait_inlay") portrait_inlay();
-else if (part == "window_card") translate([-14.5, -H - 1.9, -(D + bump - 2.8)]) window_card();
+else if (part == "window_card") translate([0, 0, -D]) window_card();
 else if (part == "top_plate") real() rotate([-90, 0, 0]) translate([0, -H - tp_h, 0]) top_plate();
 else if (part == "top_bits") {   // dial and shoe top down, the lever flat side down
     translate([0, 0, 5.8]) mirror([0, 0, 1]) dial();

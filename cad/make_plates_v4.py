@@ -14,8 +14,9 @@ THE REAL CAMERA, plates 1 to 4 (the newest version of every part):
                (black), 0.1 mm layers. Print it once the portrait is final.
 THE TEST PRINTS, plates 5 to 10, kept for reference: the first body test, the reprint, the battery
 test, the button test, and the two overnight plates.
-The filaments carry the tuned flow ratios (0.931 for both, from the flow rate test); the white is
-Bambu PLA Basic, the brown Bambu PLA Wood. Every plate has a scarf seam on the outer walls and
+    11 black   plate 1 again, in the PLA Matte black
+The filaments carry the tuned flow ratios (0.931 for all three, from the flow rate test: the black
+takes the white's); the white is Bambu PLA Basic, the brown Bambu PLA Wood. Every plate has a scarf seam on the outer walls and
 slower outer walls (150 mm/s).
 Filaments: 1 black, 2 white, 3 brown (your PLA Matte black, PLA Basic white, PLA Wood).
 The print settings come from Bambu Studio's own system presets, flattened, with 3 walls.
@@ -44,7 +45,8 @@ PRINTER, PROCESS = "Bambu Lab P2S 0.4 nozzle", "0.20mm Standard @BBL P2S"
 # project with an edited preset): a custom name with no base recorded stops Bambu Studio opening the file.
 TUNED_WHITE = {"filament_flow_ratio": ["0.931", "0.98"]}
 TUNED_WOOD = {"filament_flow_ratio": ["0.931", "0.98"]}
-FILAMENTS = [("Bambu PLA Matte @BBL P2S", "#000000", {}), ("Bambu PLA Basic @BBL P2S", "#FFFFFF", TUNED_WHITE),
+TUNED_BLACK = TUNED_WHITE      # not tested on its own: the PLA Matte black takes the white's tuned values
+FILAMENTS = [("Bambu PLA Matte @BBL P2S", "#000000", TUNED_BLACK), ("Bambu PLA Basic @BBL P2S", "#FFFFFF", TUNED_WHITE),
              ("Bambu PLA Wood @BBL P2S", "#3F231C", TUNED_WOOD)]
 BED, MARGIN, GAP = 256.0, 12.0, 7.0
 STRIDE = BED * 1.2            # Bambu lays plates out 1/5 of a bed apart, in rows of ceil(sqrt(n))
@@ -63,7 +65,7 @@ PLATES = [
     ("FINAL 2: silver", [("top_plate.stl", 2, FINE), ("bottom_plate.stl", 2, FINE), ("lens_barrel.stl", 2, FINE),
                          ("caps_light.stl", 2, FINE), ("top_bits.stl", 2, FINE), ("knob_cap.stl", 2, FINE)]),
     ("FINAL 3: front covering", [("leatherette.3mf", 3, GRAIN)]),
-    ("FINAL 4: back covering with the portrait, window card", [("back_leatherette.3mf", 3, GRAIN), ("window_card.stl", 1, GRAIN)]),
+    ("FINAL 4: back covering with the portrait, window glasses", [("back_leatherette.3mf", 3, GRAIN), ("window_card.stl", 1, GRAIN)]),
     # ---- the test prints, kept as they were (the same parts, now at their newest version)
     ("Test: body and inside (first test)", [("frame.3mf", 3, {}), ("back_plate.stl", 3, {}), ("front_plate.stl", 3, {}),
                                             ("deck.stl", 3, {}), ("cradle.stl", 3, {}), ("carrier.stl", 3, {})]),
@@ -73,6 +75,9 @@ PLATES = [
     ("Test: overnight silver (bottom plate, lens, caps, dial, shoe, lever)", [("bottom_plate.stl", 2, {}), ("lens_barrel.stl", 2, {}),
                                                                              ("caps_light.stl", 2, {}), ("top_bits.stl", 2, {})]),
     ("Test: overnight front covering", [("leatherette.3mf", 3, GRAIN)]),
+    # ---- plate 1 again, in the PLA Matte black (at the end, so the other plates keep their numbers)
+    ("FINAL 1 in black: body and inside", [("frame.3mf", 1, BODY), ("back_plate.stl", 1, PLATE), ("front_plate.stl", 1, PLATE),
+                                           ("deck.stl", 1, BODY), ("cradle.stl", 1, BODY), ("carrier.stl", 1, BODY)]),
 ]
 EXTRA_VOLUMES = {"back_leatherette.3mf": [("portrait_inlay.3mf", 1, "portrait inlay")]}
 

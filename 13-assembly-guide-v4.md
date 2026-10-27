@@ -19,6 +19,20 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 - **The back and front plates print solid** (8 top and 4 bottom layers). That way the sparse infill can't show through as ridges on the top surface.
 - **No scarf seam on the body plate.** The scarf seam is for long outer walls and smears on the frame's small loops.
 
+**27 Oct, the silver front and its lettering** (plates 2 and 4):
+- **No lettering on the top plate.** The name is on the lens only, and the red-dot badge is a plain round recess, 11 mm across (paint it red).
+- **The front windows are bigger and centred on the silver band**, like the M6's:
+  - viewfinder 19 × 9 mm, frosted window 11.5 × 9 mm, rangefinder window 8 × 7 mm;
+  - the rangefinder window sits in the middle of the space right of the badge;
+  - the rewind lever is bigger.
+- **Dark window glasses instead of the window card.**
+  - The windows now reach below the top plate's edge, where the frame is behind, so they can't be holes with a card behind them any more.
+  - Each is a pocket in the front, and a 0.6 mm black "glass" presses in. Higher up it sits on the top plate's front wall; lower down, on the frame and front plate. Its face sits 0.6 mm below the surface, inside the raised rim.
+  - The glasses print on plate 4 in black, as the card did. The part keeps the card's file name, `window_card.stl`.
+- **The lens ring reads DIGICAM / RYAN LIM** in 2.8 mm Futura Bold capitals, the way Leica lenses are lettered. Lower case at that size printed as specks. The index mark moved under the gap in RYAN LIM.
+- **The speed dial** shows every other speed (B, 4, 15, 60, 250, 1000), bigger and bold. **The bottom plate's line** is bold too.
+- **Engravings are 0.6 mm deep**, so they can be paint-filled. White on white never reads well. Brush in black acrylic, let it skin over for a minute, then wipe across with a barely damp cloth or a card. The paint stays in the letters.
+
 ![Before and after](cad/renders/v4/before_after_m6.png)
 
 **26 Oct, overnight prints:** the parts nothing still under test depends on.
@@ -31,7 +45,7 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 - **Still to come:**
   - the back covering and its inlay, after the portrait's edits;
   - the top cover and the knob, after its shutter and switch are tried;
-  - the dark window card, with the back covering's black.
+  - the dark window glasses, with the back covering's black.
 
 **26 Oct, the buttons:**
 - **Bigger wire holes in the carrier:** 1.8 × 2.25 mm (they were 1.0 × 1.6), so a 26 AWG wire goes through beside each foot. The rest of Allen's pocket is unchanged.
@@ -83,10 +97,9 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 - **No sudden drop at the screen.** The glass sits 1.2 mm deep in a pocket in the back plate. From the glass, a short 45° bevel in the back plate (45° because the plate prints face down over the window) runs into the covering's smooth frame. The frame carries the slope on up at about 22° to the leather, and stands 0.2 mm proud. The slope is steeper along the top edge, where the buttons leave less room. The camera is 0.3 mm thinner for it.
 - **A fuller silver front, like the M6's:**
   - raised rims round the three front windows, like its chrome bezels;
-  - a round badge where its red dot is, "digicam" standing in a shallow recess (paint the recess red if you like);
-  - the rewind lever, with its slotted pivot and an R, at the leather line under the name;
-  - a small "No. 01" under the viewfinder, where the M6 has 0.58.
-- **Text:** the lens reads "digicam" over the top and "ryan lim" along the bottom. The bottom plate reads "digicam · ryan lim". Both are in Futura, like the name.
+  - a round recess where its red dot is (paint it red);
+  - the rewind lever, with its slotted pivot, at the leather line.
+- **Text:** the lens reads "DIGICAM" over the top and "RYAN LIM" along the bottom. The bottom plate reads "digicam · ryan lim". Both are in Futura Bold. The top plate has none.
 - **Both USB-C sockets** on the board now have an opening in the end wall. The second one (OTG) is a backup for power. It can't carry data, because its lines (GPIO 19 and 20) drive the screen.
 
 ![Back, the screen's bevel](cad/renders/v4/back.png)
@@ -94,7 +107,7 @@ v4 is the retro body rebuilt around the parts as measured. The 2.0 in screen (61
 **Left-handed.** Ryan is left-handed, so this is the M6 mirrored:
 - On the left as you hold it: the shutter, speed dial, advance lever and frame counter.
 - On the right: the rewind-style knob (the power switch), the viewfinder and the eyepiece.
-- From the front, the name sits beside the rangefinder window at the right, and the lens release and frame selector are left of the lens.
+- From the front, the rangefinder window is at the right, and the lens release and frame selector are left of the lens.
 - The lens stays left of centre seen from the front, where the board puts it. That's the mirror image of the M6, where it's right of centre.
 
 **Size.**
@@ -205,8 +218,9 @@ Then run `python3 cad/export_v4.py` (parts and fit check) and `python3 cad/make_
 | **FINAL 1** | frame, back plate, front plate, wiring deck, power cradle, button carrier | PLA Wood - tuned | 1 h 58 min, 62 g |
 | **FINAL 2** | top cover, bottom plate, lens barrel, button caps and shutter cap, rewind knob, speed dial, shoe, advance lever (0.12 mm layers) | PLA Basic White - tuned | 1 h 43 min, 34 g |
 | **FINAL 3** | front covering (0.1 mm layers) | PLA Wood - tuned | 24 min, 5 g |
-| **FINAL 4** | back covering with the portrait inlay, dark window card (0.1 mm layers) | PLA Wood - tuned + black | 40 min, 12 g |
+| **FINAL 4** | back covering with the portrait inlay, the two dark window glasses (0.1 mm layers) | PLA Wood - tuned + black | 39 min, 11 g |
 | Test 5 to 10 | the first body test, the reprint, the battery test, the button test, the two overnight plates | | |
+| **11** | plate 1 again in black: frame, back plate, front plate, deck, cradle, carrier | PLA Matte black, with the white's tuned flow ratio (0.931) | 1 h 58 min, 68 g |
 
 The project carries your flow ratios (0.931 for both), a scarf seam on the outer walls, slower outer walls (150 mm/s) and the elephant-foot compensation (0.15 mm). The brown is set up on Bambu PLA Wood's own preset.
 
@@ -325,7 +339,7 @@ The 3D guide's **Wire by wire** step (step 4) goes through all 21 wires one at a
     2. Lower the plate: the collar centres the camera, and its rim presses on the charge module.
     3. Fit 4 countersunk M2 × 5.
 13. **Silver top cover** (after the front plate: it hides the front plate's top two screws):
-    1. Inside the cover, glue the dark window card behind the two front windows. Black in the eyepiece and the frame counter with a marker.
+    1. Press the two dark window glasses into the front windows' pockets, with a dot of glue where they sit on the cover's wall. Black in the eyepiece and the frame counter with a marker.
     2. Pass the shutter switch (left end, as you hold it) and the slide switch (right end), wires attached, up through their passages in the frame's top wall.
     3. The shutter cap goes in first, from inside: stem up through the cradle and out of its hole in the top, its flange under the ceiling.
     4. Push the shutter switch (the same 6 × 6 four-leg switch as the back buttons) up into its cradle, plunger first, until the two fingers click under its base; its legs come out through the side notches. Push the slide switch into its pocket, knob through the slot (a dot of hot glue).
